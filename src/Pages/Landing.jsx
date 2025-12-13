@@ -276,7 +276,7 @@ export default function Landing() {
     <div>
       <h5 className="text-xl font-semibold mb-4">Get Updates</h5>
 
-      <div className="bg-white/10 backdrop-blur-lg p-4 rounded-xl w-130">
+      <div className="bg-white/10 backdrop-blur-lg p-4 rounded-xl w-100">
         <input
           type="email"
           placeholder="Enter your email"

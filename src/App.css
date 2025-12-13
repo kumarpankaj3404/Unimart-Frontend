@@ -1,10 +1,2 @@
 @import "tailwindcss";
 
-
-.darkMode {
-  --bg: #0f172a;               
-  --text: #f1f5f9;           
-  --card: rgba(255,255,255,0.08);
-  --border: rgba(255,255,255,0.2);
-  --accent: #22c55e;         
-}
