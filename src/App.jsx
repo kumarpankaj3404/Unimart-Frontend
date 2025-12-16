@@ -4,6 +4,7 @@ import Login from "./Pages/Login";
 import Dashboard from "./Pages/Dashboard";
 import Items from "./Pages/Items";
 import "./App.css";
+import About from "./Pages/About";
 
 export default function App() {
   return (
@@ -14,6 +15,7 @@ export default function App() {
         <Route path="/signup" element={<Login/>} />
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/items" element={<Items />} />
+        <Route path="/about" element={<About />} />
       </Routes>
     </Router>
   );
