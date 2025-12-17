@@ -2,7 +2,6 @@ import { useEffect, useRef, useState } from "react";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 
-/* ================= LEAFLET ICON FIX ================= */
 try {
   delete L.Icon.Default.prototype._getIconUrl;
 } catch {}
@@ -15,7 +14,6 @@ L.Icon.Default.mergeOptions({
     "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-shadow.png",
 });
 
-/* ================= CUSTOM PULSING ICON ================= */
 const createScooterIcon = () => {
   return L.divIcon({
     className: "bg-transparent",
@@ -201,7 +199,7 @@ export default function Tracking() {
         <div ref={mapRef} className="w-full h-full" />
         
         {/* Mobile Floating Badge (Hidden on large desktop to keep clean) */}
-        <div className="absolute top-4 left-4 z-[400] bg-white/90 backdrop-blur shadow-lg rounded-full px-4 py-2 flex items-center gap-2 lg:hidden">
+        <div className="absolute top-4 left-4 z-400 bg-white/90 backdrop-blur shadow-lg rounded-full px-4 py-2 flex items-center gap-2 lg:hidden">
            <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
            <span className="text-sm font-bold text-gray-800">Live • {eta} min</span>
         </div>
