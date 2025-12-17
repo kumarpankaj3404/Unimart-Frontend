@@ -2,6 +2,9 @@ import React, { useEffect, useState } from "react";
 import { FaSearch, FaChevronLeft, FaChevronRight, FaHeart, FaRegHeart } from "react-icons/fa";
 import { FiMinus, FiPlus, FiX, FiShoppingBag, FiTrash2 } from "react-icons/fi";
 import Navbar from "./Navbar";
+import AdressModal from "./AdressModal";
+import OrderSuccess from "./OrderSuccess";
+import OrderSummaryModal from "./OrderSummaryModal";
 
 // --- IMAGES ---
 import Apple from "../items/Apples.png";
@@ -33,6 +36,13 @@ import cro from "../items/cro.png";
 import muffin from "../items/muffin.png";
 
 export default function Items() {
+  const [addressOpen, setAddressOpen] = useState(false);
+
+  const [selectedAddress, setSelectedAddress] = useState(null);
+  const [summaryOpen, setSummaryOpen] = useState(false);
+  const [orderSuccess, setOrderSuccess] = useState(false);
+
+
   const [search, setSearch] = useState("");
   const [activeCategory, setActiveCategory] = useState("All");
 
@@ -57,6 +67,7 @@ export default function Items() {
       { id: "brocoli", name: "Broccoli", price: 60, img: brocoli, weight: "1 pc" },
       { id: "carrots", name: "Fresh Carrots", price: 40, img: carrots, weight: "500g" },
       { id: "onion", name: "Red Onion", price: 30, img: onion, weight: "1kg" },
+      { id: "green", name: "Spinach", price: 30, img: green, weight: "1kg" },
       { id: "tomato", name: "Tomato Hybrid", price: 45, img: tomato, weight: "1kg" },
     ],
     Dairy: [
@@ -69,16 +80,21 @@ export default function Items() {
       { id: "chips", name: "Potato Chips", price: 99, img: chips, weight: "150g" },
       { id: "nacho", name: "Cheese Nachos", price: 149, img: nacho, weight: "150g" },
       { id: "cookies", name: "Choco Cookies", price: 149, img: cookie, weight: "200g" },
+      { id: "pop", name: "PopCorn", price: 149, img: pop, weight: "200g" },
       { id: "chocolate", name: "Dark Chocolate", price: 149, img: choco, weight: "100g" },
     ],
     Beverages: [
       { id: "juice", name: "Orange Juice", price: 199, img: juice, weight: "1L" },
       { id: "cola", name: "Cola Can", price: 40, img: cola, weight: "330ml" },
+      { id: "water", name: "Mineral Water", price: 40, img: water, weight: "330ml" },
+      { id: "drink", name: "Energy Drink", price: 40, img: drink, weight: "330ml" },
       { id: "coffee", name: "Cold Coffee", price: 89, img: coffee, weight: "250ml" },
     ],
     Bakery: [
       { id: "bread", name: "Whole Wheat Bread", price: 50, img: bread, weight: "400g" },
       { id: "cro", name: "Butter Croissant", price: 89, img: cro, weight: "1 pc" },
+      { id: "bun", name: "Burger bun", price: 89, img: bun, weight: "1 pc" },
+      { id: "muffin", name: "Muffin", price: 89, img: muffin, weight: "1 pc" },
     ],
   };
 
@@ -252,11 +268,38 @@ export default function Items() {
       </div>
 
       <CartDrawer
-        cart={cart}
-        changeQty={changeQty}
-        cartOpen={cartOpen}
-        setCartOpen={setCartOpen}
-      />
+  cart={cart}
+  changeQty={changeQty}
+  cartOpen={cartOpen}
+  setCartOpen={setCartOpen}
+  setAddressOpen={setAddressOpen}
+/>
+
+<AdressModal
+  open={addressOpen}
+  onClose={() => setAddressOpen(false)}
+  onConfirm={(address) => {
+    setSelectedAddress(address);
+    setAddressOpen(false);
+    setSummaryOpen(true);
+  }}
+/>
+<OrderSummaryModal
+  open={summaryOpen}
+  address={selectedAddress}
+  onBack={() => {
+    setSummaryOpen(false);
+    setAddressOpen(true);
+  }}
+  onConfirm={() => {
+    setSummaryOpen(false);
+    setOrderSuccess(true);
+  }}
+/>
+<OrderSuccess open={orderSuccess} />
+
+
+
 
       {/* --- GLOBAL STYLES FOR ANIMATION --- */}
       <style>{`
@@ -358,7 +401,7 @@ function ProductCard({ item, addToCartOnCard, qty, handlePlus, handleMinus, togg
   );
 }
 
-function CartDrawer({ cart, changeQty, cartOpen, setCartOpen }) {
+function CartDrawer({ cart, changeQty, cartOpen, setCartOpen,setAddressOpen }) {
   const total = cart.reduce((s, p) => s + (p.price * (p.qty || 0)), 0);
   const deliveryFee = total > 499 ? 0 : 30;
   const platformFee = 5;
@@ -452,13 +495,17 @@ function CartDrawer({ cart, changeQty, cartOpen, setCartOpen }) {
         {/* Footer */}
         {cart.length > 0 && (
           <div className="bg-white p-6 border-t border-[#F0FDF4] shadow-[0_-10px_40px_rgba(0,0,0,0.05)]">
-             <button className="w-full bg-[#16A34A] text-white py-4 rounded-xl font-bold text-lg shadow-lg hover:bg-[#14532D] hover:shadow-[#16A34A]/40 transition-all duration-300 active:scale-[0.98] flex items-center justify-center gap-2 group">
-                <span>Checkout</span>
-                <span className="bg-white/20 px-2 py-0.5 rounded text-sm group-hover:bg-white/30 transition">₹{finalTotal}</span>
-             </button>
+             <button
+  onClick={() => setAddressOpen(true)}
+  className="w-full bg-[#16A34A] text-white py-4 rounded-xl font-bold text-lg"
+>
+  Checkout
+</button>
           </div>
+          
         )}
       </div>
+      
     </>
   );
 }

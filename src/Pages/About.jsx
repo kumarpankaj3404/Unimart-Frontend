@@ -2,6 +2,7 @@ import React, { useEffect } from "react";
 import Navbar from "./Navbar"; // Assuming you have this component
 import { FaLeaf, FaBolt, FaHeart, FaUsers } from "react-icons/fa";
 import { MdVerified } from "react-icons/md";
+import { Link } from "react-router-dom";
 
 // Placeholder images from Unsplash matching your theme
 const team1 = "https://images.unsplash.com/photo-1560250097-0b93528c311a?w=400&auto=format&fit=crop&q=60";
@@ -167,9 +168,11 @@ export default function About() {
          <div className="relative z-10 max-w-3xl mx-auto px-6">
            <h2 className="text-4xl lg:text-5xl font-extrabold mb-6">Ready to experience the future of grocery?</h2>
            <p className="text-lg text-white/90 mb-8">Join thousands of happy customers in your city today.</p>
+           <Link to="/items">
            <button className="bg-white text-[#16A34A] px-10 py-4 rounded-xl text-xl font-bold shadow-lg hover:bg-gray-100 transition hover:scale-105">
              Start Shopping
            </button>
+           </Link>
          </div>
       </section>
 
