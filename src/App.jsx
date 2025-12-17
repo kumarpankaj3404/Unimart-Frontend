@@ -3,6 +3,7 @@ import Landing from "./Pages/Landing";
 import Login from "./Pages/Login";
 import Dashboard from "./Pages/Dashboard";
 import Items from "./Pages/Items";
+import Tracking from "./Pages/Tracking";
 import "./App.css";
 import About from "./Pages/About";
 
@@ -16,6 +17,7 @@ export default function App() {
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/items" element={<Items />} />
         <Route path="/about" element={<About />} />
+        <Route path="/tracking" element={<Tracking />} />
       </Routes>
     </Router>
   );
