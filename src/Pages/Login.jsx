@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import {
   HiOutlineMail,
   HiOutlineLockClosed,
@@ -7,7 +8,8 @@ import {
 import { FcGoogle } from "react-icons/fc";
 import dro from "../assets/Drone.png"
 
-export default function Auth() {
+export default function Login() {
+  const navigate = useNavigate();
   const [isSignup, setIsSignup] = useState(false);
 
   const [showPass, setShowPass] = useState(false);
@@ -23,9 +25,9 @@ export default function Auth() {
       alert("Please fill all fields");
       return;
     }
-    const user = { name: "User" };
+    const user = { name: name || "User", email };
     localStorage.setItem("user", JSON.stringify(user));
-    window.location.href = "/";
+    navigate("/dashboard");
   };
 
   const handleSignup = () => {
@@ -39,9 +41,9 @@ export default function Auth() {
       return;
     }
 
-    const user = { name };
+    const user = { name, email };
     localStorage.setItem("user", JSON.stringify(user));
-    window.location.href = "/";
+    navigate("/dashboard");
   };
 
   return (

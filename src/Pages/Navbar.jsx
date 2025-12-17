@@ -1,15 +1,33 @@
 import React, { useEffect, useState } from "react";
+<<<<<<< Updated upstream
 import { Link, useLocation } from "react-router-dom";
 import { HiMenuAlt3, HiX } from "react-icons/hi";
 import { BsSunFill, BsMoonStarsFill } from "react-icons/bs";
 import { FaUserCircle } from "react-icons/fa";
+=======
+import { Link, useNavigate } from "react-router-dom";
+import { HiMenu, HiX, HiChevronDown } from "react-icons/hi";
+import { BsSun, BsMoon } from "react-icons/bs";
+import {
+  HiOutlineUser,
+  HiOutlineShoppingBag,
+  HiOutlineLocationMarker,
+  HiOutlineLogout,
+} from "react-icons/hi";
+>>>>>>> Stashed changes
 
 export default function Navbar() {
+  const navigate = useNavigate();
   const [theme, setTheme] = useState("light");
   const [open, setOpen] = useState(false);
+<<<<<<< Updated upstream
   const [user, setUser] = useState(null);
   const [scrolled, setScrolled] = useState(false);
   const location = useLocation();
+=======
+  const [showDropdown, setShowDropdown] = useState(false);
+  const [user, setUser] = useState(null); 
+>>>>>>> Stashed changes
 
   // Handle Scroll Effect
   useEffect(() => {
@@ -40,9 +58,30 @@ export default function Navbar() {
     localStorage.setItem("theme", theme);
   }, [theme]);
 
+<<<<<<< Updated upstream
+=======
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (showDropdown && !event.target.closest('.dropdown-container')) {
+        setShowDropdown(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [showDropdown]);
+
+
+>>>>>>> Stashed changes
   const handleLogout = () => {
     localStorage.removeItem("user");
     setUser(null);
+    setShowDropdown(false);
+    navigate("/");
+  };
+
+  const handleDashboardClick = () => {
+    navigate("/dashboard");
+    setShowDropdown(false);
   };
 
   const toggleTheme = () => {
@@ -125,6 +164,7 @@ export default function Navbar() {
             {/* Divider */}
             <div className="h-6 w-[1px] bg-gray-300 dark:bg-gray-700"></div>
 
+<<<<<<< Updated upstream
             {/* Auth State */}
             {user ? (
               <div className="flex items-center gap-3 pl-2">
@@ -159,6 +199,123 @@ export default function Navbar() {
           </div>
 
           {/* --- MOBILE TOGGLE --- */}
+=======
+          <button
+            onClick={() => setTheme(theme === "light" ? "dark" : "light")}
+            className="
+              w-20 h-9 rounded-full relative
+              bg-white/40 border border-white/50 shadow-inner
+              flex items-center justify-between px-2
+            "
+          >
+            <div
+              className={`
+                absolute top-[3px] left-[3px] w-7 h-7
+                bg-white dark:bg-gray-300 rounded-full shadow-md 
+                transition-all duration-300
+                ${theme === "dark" ? "translate-x-10" : ""}
+              `}
+            ></div>
+
+            <BsSun className="text-yellow-600 z-10" />
+            <BsMoon className="text-gray-800 dark:text-black z-10" />
+          </button>
+
+          {user ? (
+            <div className="relative dropdown-container">
+              <button
+                onClick={() => setShowDropdown(!showDropdown)}
+                className="flex items-center gap-3 bg-white/40 dark:bg-white/10 backdrop-blur-xl px-4 py-2 rounded-full border border-white/40 shadow hover:shadow-xl transition"
+              >
+                <div className="text-sm leading-tight text-left">
+                  <p className="text-[#0b3d20] dark:text-emerald-200 font-semibold">Hello,</p>
+                  <p className="text-[#16A34A] dark:text-emerald-300 font-semibold -mt-0.5">
+                    {user.name}
+                  </p>
+                </div>
+
+                <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[#16A34A] to-[#22C55E] flex items-center justify-center text-white font-bold border-2 border-white">
+                  {user.name?.charAt(0).toUpperCase() || "U"}
+                </div>
+
+                <HiChevronDown className={`w-5 h-5 text-[#16A34A] transition-transform ${showDropdown ? "rotate-180" : ""}`} />
+              </button>
+
+              {showDropdown && (
+                <div className="absolute right-0 mt-2 w-64 bg-white dark:bg-gray-800 rounded-xl shadow-2xl border border-gray-200 dark:border-gray-700 overflow-hidden z-50">
+                  <div className="p-4 border-b border-gray-200 dark:border-gray-700">
+                    <p className="font-semibold text-gray-800 dark:text-white">{user.name}</p>
+                    <p className="text-sm text-gray-500 dark:text-gray-400">{user.email || "user@example.com"}</p>
+                  </div>
+                  
+                  <div className="py-2">
+                    <button
+                      onClick={handleDashboardClick}
+                      className="w-full flex items-center gap-3 px-4 py-3 text-left hover:bg-gray-50 dark:hover:bg-gray-700 transition text-gray-700 dark:text-gray-300"
+                    >
+                      <HiOutlineUser className="w-5 h-5 text-[#16A34A]" />
+                      <span>My Account</span>
+                    </button>
+                    
+                    <button
+                      onClick={handleDashboardClick}
+                      className="w-full flex items-center gap-3 px-4 py-3 text-left hover:bg-gray-50 dark:hover:bg-gray-700 transition text-gray-700 dark:text-gray-300"
+                    >
+                      <HiOutlineShoppingBag className="w-5 h-5 text-[#16A34A]" />
+                      <span>My Orders</span>
+                    </button>
+                    
+                    <button
+                      onClick={handleDashboardClick}
+                      className="w-full flex items-center gap-3 px-4 py-3 text-left hover:bg-gray-50 dark:hover:bg-gray-700 transition text-gray-700 dark:text-gray-300"
+                    >
+                      <HiOutlineLocationMarker className="w-5 h-5 text-[#16A34A]" />
+                      <span>Saved Addresses</span>
+                    </button>
+                    
+                    <div className="border-t border-gray-200 dark:border-gray-700 my-2"></div>
+                    
+                    <button
+                      onClick={handleLogout}
+                      className="w-full flex items-center gap-3 px-4 py-3 text-left hover:bg-red-50 dark:hover:bg-red-900/20 transition text-red-600 dark:text-red-400"
+                    >
+                      <HiOutlineLogout className="w-5 h-5" />
+                      <span>Logout</span>
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
+          ) : (
+            <Link to="/login">
+              <button
+                className="
+                  px-6 py-2 rounded-full bg-[#16A34A] text-white font-semibold
+                  shadow-lg hover:bg-[#139c42] transition-all hover:shadow-xl
+                "
+              >
+                Get Started
+              </button>
+            </Link>
+          )}
+        </div>
+
+        <button onClick={() => setOpen(!open)} className="md:hidden text-3xl dark:text-white">
+          {open ? <HiX /> : <HiMenu />}
+        </button>
+      </nav>
+
+      {open && (
+        <div className="
+          md:hidden w-[92%] mt-2 px-6 py-5 rounded-2xl
+          bg-white/40 dark:bg-black/40 backdrop-blur-2xl 
+          border border-white/40 shadow-xl text-[#0b3d20] dark:text-white space-y-4
+        ">
+          {["Home", "Items", "Categories", "About", "Contact"].map((item) => (
+            <p key={item} className="hover:text-[#16A34A]">{item}</p>
+          ))}
+
+>>>>>>> Stashed changes
           <button
             onClick={() => setOpen(!open)}
             className="md:hidden p-2 text-gray-600 dark:text-gray-300 bg-gray-100 dark:bg-gray-800 rounded-full"
@@ -168,6 +325,7 @@ export default function Navbar() {
         </nav>
       </div>
 
+<<<<<<< Updated upstream
       {/* --- MOBILE MENU OVERLAY --- */}
       <div
         className={`
@@ -203,6 +361,29 @@ export default function Navbar() {
             >
               {link.name}
               {location.pathname === link.path && <div className="w-2 h-2 rounded-full bg-green-500"></div>}
+=======
+          {user ? (
+            <div className="space-y-2 mt-4">
+              <button
+                onClick={handleDashboardClick}
+                className="w-full bg-white/40 dark:bg-white/10 px-4 py-3 rounded-xl border border-white/40 text-left hover:bg-white/60 transition"
+              >
+                <p className="font-semibold text-gray-800 dark:text-white">Hello, {user.name}</p>
+                <p className="text-sm text-gray-600 dark:text-gray-400">View Dashboard</p>
+              </button>
+              <button
+                onClick={handleLogout}
+                className="w-full bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 px-4 py-3 rounded-xl border border-red-200 dark:border-red-800 hover:bg-red-100 transition"
+              >
+                Logout
+              </button>
+            </div>
+          ) : (
+            <Link to="/login">
+              <button className="w-full bg-[#16A34A] text-white py-3 rounded-xl mt-4">
+                Get Started
+              </button>
+>>>>>>> Stashed changes
             </Link>
           ))}
         </div>
