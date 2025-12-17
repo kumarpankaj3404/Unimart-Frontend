@@ -1,9 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { FaSearch, FaChevronLeft, FaChevronRight, FaHeart, FaRegHeart } from "react-icons/fa";
-import { FiMinus, FiPlus, FiX, FiShoppingBag, FiTrash2 } from "react-icons/fi";
+import { FiShoppingCart } from "react-icons/fi";
 import Navbar from "./Navbar";
-
-// --- IMAGES ---
 import Apple from "../items/Apples.png";
 import Banana from "../items/Banana.png";
 import straw from "../items/Strawberry.png";
@@ -38,52 +36,114 @@ export default function Items() {
 
   const [cart, setCart] = useState(() => JSON.parse(localStorage.getItem("cart")) || []);
   const [wishlist, setWishlist] = useState(() => JSON.parse(localStorage.getItem("wishlist")) || []);
-  const [qtyMap, setQtyMap] = useState(() => JSON.parse(localStorage.getItem("qtyMap")) || {});
+  const [qtyMap, setQtyMap] = useState(() => JSON.parse(localStorage.getItem("qtyMap")) || {}); // Option B: show qty on cards
+
   const [cartOpen, setCartOpen] = useState(false);
 
   useEffect(() => localStorage.setItem("cart", JSON.stringify(cart)), [cart]);
   useEffect(() => localStorage.setItem("wishlist", JSON.stringify(wishlist)), [wishlist]);
   useEffect(() => localStorage.setItem("qtyMap", JSON.stringify(qtyMap)), [qtyMap]);
 
-  // --- DATA ---
   const categories = {
     Fruits: [
-      { id: "apple", name: "Fresh Red Apples", price: 79, img: Apple, weight: "1kg" },
-      { id: "banana", name: "Fresh Banana", price: 129, img: Banana, weight: "12 pcs" },
-      { id: "grapes", name: "Black Grapes", price: 129, img: grapes, weight: "500g" },
-      { id: "strawberry", name: "Strawberry Box", price: 159, img: straw, weight: "200g" },
+      { id: "apple", name: "Fresh Red Apples", price: 79, img: Apple },
+      { id: "banana", name: "Fresh Banana", price: 129, img: Banana },
+      { id: "grapes", name: "Grapes", price: 129, img: grapes },
+      { id: "strawberry", name: "Strawberry", price: 159, img: straw },
     ],
     Vegetables: [
-      { id: "brocoli", name: "Broccoli", price: 60, img: brocoli, weight: "1 pc" },
-      { id: "carrots", name: "Fresh Carrots", price: 40, img: carrots, weight: "500g" },
-      { id: "onion", name: "Red Onion", price: 30, img: onion, weight: "1kg" },
-      { id: "tomato", name: "Tomato Hybrid", price: 45, img: tomato, weight: "1kg" },
+      { id: "brocoli", name: "Broccoli", price: 60, img: brocoli },
+      { id: "carrots", name: "Carrots", price: 40, img: carrots },
+      { id: "onion", name: "Onion", price: 30, img: onion },
+      { id: "greens", name: "Green Spinach", price: 45, img: green },
+      { id: "tomato", name: "Tomato", price: 45, img: tomato },
+      
     ],
     Dairy: [
-      { id: "creamMilk", name: "Full Cream Milk", price: 60, img: creamMilk, weight: "1L" },
-      { id: "cheese", name: "Cheddar Cheese", price: 180, img: cheese, weight: "200g" },
-      { id: "yogurt", name: "Greek Yogurt", price: 90, img: yogurt, weight: "400g" },
-      { id: "paneer", name: "Fresh Paneer", price: 140, img: paneer, weight: "200g" },
+      { id: "creamMilk", name: "Cream Milk", price: 110, img: creamMilk },
+      { id: "cheese", name: "Cheese", price: 180, img: cheese },
+      { id: "yogurt", name: "Yogurt", price: 90, img: yogurt },
+      { id: "paneer", name: "Paneer", price: 140, img: paneer },
     ],
     Snacks: [
-      { id: "chips", name: "Potato Chips", price: 99, img: chips, weight: "150g" },
-      { id: "nacho", name: "Cheese Nachos", price: 149, img: nacho, weight: "150g" },
-      { id: "cookies", name: "Choco Cookies", price: 149, img: cookie, weight: "200g" },
-      { id: "chocolate", name: "Dark Chocolate", price: 149, img: choco, weight: "100g" },
+      { id: "chips", name: "Classic Potato Chips", price: 99, img: chips },
+      { id: "nacho", name: "Nachos", price: 149, img: nacho },
+      { id: "cookies", name: "Cookies", price: 149, img: cookie },
+      { id: "popcorn", name: "Popcorn", price: 149, img: pop },
+      { id: "chocolate", name: "Chocolate", price: 149, img: choco },
     ],
     Beverages: [
-      { id: "juice", name: "Orange Juice", price: 199, img: juice, weight: "1L" },
-      { id: "cola", name: "Cola Can", price: 40, img: cola, weight: "330ml" },
-      { id: "coffee", name: "Cold Coffee", price: 89, img: coffee, weight: "250ml" },
+      { id: "juice", name: "Orange Juice", price: 199, img: juice },
+      { id: "cola", name: "Cold Drink", price: 89, img: cola },
+      { id: "water", name: "Mineral Water", price: 89, img: water },
+      { id: "coffee", name: "Brew Coffee", price: 89, img: coffee },
+      { id: "energy", name: "Energy Drink", price: 89, img: drink },
     ],
     Bakery: [
-      { id: "bread", name: "Whole Wheat Bread", price: 50, img: bread, weight: "400g" },
-      { id: "cro", name: "Butter Croissant", price: 89, img: cro, weight: "1 pc" },
+      { id: "bread", name: "Bread Loaf", price: 120, img: bread },
+      { id: "bun", name: "Burger Buns", price: 70, img: bun },
+      { id: "cro", name: "Croissant", price: 89, img: cro },
+      { id: "muffin", name: "Muffins", price: 89, img: muffin },
     ],
   };
+function CategoryRow({
+  title,
+  items,
+  index,
+  scroll,
+  addToCartOnCard,
+  getQty,
+  handlePlus,
+  handleMinus,
+  toggleWishlist,
+  wishlist,
+}) {
+  return (
+    <div className="mb-14">
+      <div className="flex justify-between items-center mb-3">
+        <h2 className="text-2xl font-semibold text-[#14532D]">{title}</h2>
+      </div>
+
+      <div className="relative bg-white rounded-3xl shadow p-4 overflow-hidden">
+        <button
+          onClick={() => scroll(`row-${index}`, -300)}
+          className="absolute left-2 top-1/2 -translate-y-1/2 z-20
+          bg-white shadow-md w-8 h-8 flex items-center justify-center rounded-full hover:scale-110 transition"
+        >
+          <FaChevronLeft size={14} />
+        </button>
+
+        <div
+          id={`row-${index}`}
+          className="flex gap-4 overflow-x-scroll scrollbar-hide px-2"
+        >
+          {items.map((item) => (
+            <ProductCard
+              key={item.id}
+              item={item}
+              addToCartOnCard={addToCartOnCard}
+              qty={getQty(item.id)}
+              handlePlus={() => handlePlus(item.id)}
+              handleMinus={() => handleMinus(item.id)}
+              toggleWishlist={() => toggleWishlist(item.id)}
+              wished={wishlist.includes(item.id)}
+            />
+          ))}
+        </div>
+        <button
+          onClick={() => scroll(`row-${index}`, 300)}
+          className="absolute right-2 top-1/2 -translate-y-1/2 z-20
+          bg-white shadow-md w-8 h-8 flex items-center justify-center rounded-full hover:scale-110 transition"
+        >
+          <FaChevronRight size={14} />
+        </button>
+      </div>
+    </div>
+  );
+}
 
   const allCategories = ["All", ...Object.keys(categories)];
-  
+
   const allProducts = Object.entries(categories).flatMap(([category, items]) =>
     items.map(p => ({ ...p, category }))
   );
@@ -101,10 +161,31 @@ export default function Items() {
 
   const getQty = (id) => qtyMap[id] || 0;
 
+  const addToCartOnCard = (product) => {
+    const currQty = getQty(product.id);
+    if (currQty === 0) {
+      const newQtyMap = { ...qtyMap, [product.id]: 1 };
+      setQtyMap(newQtyMap);
+      setCart(prev => {
+        const exists = prev.find(p => p.id === product.id);
+        if (exists) {
+          return prev.map(p => p.id === product.id ? { ...p, qty: (p.qty || 1) + 1 } : p);
+        } else {
+          return [...prev, { ...product, qty: 1 }];
+        }
+      });
+    } else {
+      changeQty(product.id, currQty + 1);
+    }
+  };
+
   const changeQty = (productId, newQty) => {
     const newQtyMap = { ...qtyMap };
-    if (newQty <= 0) delete newQtyMap[productId];
-    else newQtyMap[productId] = newQty;
+    if (newQty <= 0) {
+      delete newQtyMap[productId];
+    } else {
+      newQtyMap[productId] = newQty;
+    }
     setQtyMap(newQtyMap);
 
     setCart(prev => {
@@ -116,101 +197,68 @@ export default function Items() {
       if (exists && newQty > 0) {
         return prev.map(p => p.id === productId ? { ...p, qty: newQty } : p);
       }
+
       return prev.filter(p => p.id !== productId);
     });
   };
 
-  const addToCartOnCard = (product) => {
-    const currQty = getQty(product.id);
-    if (currQty === 0) changeQty(product.id, 1);
-    else changeQty(product.id, currQty + 1);
+  const toggleWishlist = (productId) => {
+    if (wishlist.includes(productId)) {
+      setWishlist(prev => prev.filter(id => id !== productId));
+    } else {
+      setWishlist(prev => [...prev, productId]);
+    }
   };
 
-  const toggleWishlist = (productId) => {
-    if (wishlist.includes(productId)) setWishlist(prev => prev.filter(id => id !== productId));
-    else setWishlist(prev => [...prev, productId]);
-  };
+  const totalItems = cart.reduce((s, p) => s + (p.qty || 0), 0);
 
   const handlePlus = (id) => changeQty(id, getQty(id) + 1);
   const handleMinus = (id) => changeQty(id, getQty(id) - 1);
-  
-  const totalItems = cart.reduce((s, p) => s + (p.qty || 0), 0);
-  const totalPrice = cart.reduce((s, p) => s + (p.price * (p.qty || 0)), 0);
 
   return (
-    <div className="min-h-screen bg-[#F0FDF4] text-[#14532D] font-sans pb-24 selection:bg-[#22C55E] selection:text-white">
+    <div className="min-h-screen bg-[#F0FDF4]">
       <Navbar />
 
-      <div className="pt-28 max-w-7xl mx-auto px-4 sm:px-6 fade-up">
-        
-        {/* --- STICKY HEADER (SEARCH & FILTER) --- */}
-        <div className=" top-20 z-30 bg-[#F0FDF4]/95 backdrop-blur-xl py-4 -mx-4 px-4 sm:mx-0 sm:px-0 transition-all duration-300">
-          
-          {/* Search Bar */}
-          <div className="relative max-w-2xl mx-auto group">
-            <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-              <FaSearch className="text-[#16A34A] group-focus-within:text-[#14532D] transition-colors" />
-            </div>
-            <input
-              type="text"
-              placeholder="Search for bread, milk, eggs..."
-              className="w-full py-4 pl-12 pr-4 rounded-2xl bg-white border border-[#22C55E]/20 outline-none text-[#14532D] placeholder-[#14532D]/40 shadow-sm focus:shadow-lg focus:border-[#16A34A] transition-all duration-300"
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-            />
-          </div>
-
-          {/* Categories Pills */}
-          <div className="mt-6 flex gap-3 overflow-x-auto pb-2 scrollbar-hide">
-            {allCategories.map((cat) => (
-              <button
-                key={cat}
-                onClick={() => setActiveCategory(cat)}
-                className={`
-                  whitespace-nowrap px-6 py-2.5 rounded-full text-sm font-bold transition-all duration-300 transform active:scale-95
-                  ${
-                    activeCategory === cat
-                      ? "bg-[#16A34A] text-white shadow-lg shadow-[#16A34A]/30"
-                      : "bg-white text-[#14532D]/70 border border-[#22C55E]/20 hover:bg-[#22C55E]/10"
-                  }
-                `}
-              >
-                {cat}
-              </button>
-            ))}
-          </div>
+      <div className="pt-28 pb-16 max-w-7xl mx-auto px-6">
+        <div className="w-full bg-white shadow-md rounded-2xl p-4 flex items-center gap-3 mb-6">
+          <FaSearch className="text-gray-500 text-lg" />
+          <input
+            type="text"
+            placeholder="Search for apples, milk, snacks..."
+            className="w-full outline-none text-gray-700 text-lg"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+          />
         </div>
-
-        {/* --- GRID VIEW (SEARCH) --- */}
+        <div className="flex gap-4 overflow-x-auto scrollbar-hide mb-8 py-2">
+          {allCategories.map((cat) => (
+            <button
+              key={cat}
+              onClick={() => setActiveCategory(cat)}
+              className={`px-5 py-2 rounded-full text-sm font-semibold border transition ${
+                activeCategory === cat
+                  ? "bg-[#16A34A] text-white border-[#16A34A]"
+                  : "bg-white border-gray-200 text-gray-700 hover:bg-gray-100"
+              }`}
+            >
+              {cat}
+            </button>
+          ))}
+        </div>
         {(search || activeCategory !== "All") && (
-          <div className="mt-6">
-            {filteredProducts.length > 0 ? (
-              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
-                {filteredProducts.map((item, i) => (
-                  <ProductCard
-                    key={item.id}
-                    item={item}
-                    addToCartOnCard={addToCartOnCard}
-                    qty={getQty(item.id)}
-                    handlePlus={() => handlePlus(item.id)}
-                    handleMinus={() => handleMinus(item.id)}
-                    toggleWishlist={() => toggleWishlist(item.id)}
-                    wished={wishlist.includes(item.id)}
-                    index={i} // For staggered animation
-                  />
-                ))}
-              </div>
-            ) : (
-              <div className="text-center py-20 text-[#14532D]/60">
-                <p className="text-xl font-medium">No items found matching your search.</p>
-              </div>
-            )}
-          </div>
+          <GridSection
+            products={filteredProducts}
+            addToCartOnCard={addToCartOnCard}
+            getQty={getQty}
+            handlePlus={handlePlus}
+            handleMinus={handleMinus}
+            toggleWishlist={toggleWishlist}
+            wishlist={wishlist}
+          />
         )}
 
-        {/* --- ROWS VIEW (DEFAULT) --- */}
         {!search && activeCategory === "All" && (
-          <div className="space-y-12 mt-4">
+          <>
             {Object.keys(categories).map((cat, index) => (
               <CategoryRow
                 key={cat}
@@ -226,239 +274,197 @@ export default function Items() {
                 wishlist={wishlist}
               />
             ))}
-          </div>
+          </>
         )}
       </div>
 
-      {/* --- SMART CART BAR --- */}
-      <div 
-        className={`fixed bottom-8 left-4 right-4 sm:left-auto sm:right-8 sm:w-96 transition-all duration-500 transform z-40 ${totalItems > 0 ? "translate-y-0 opacity-100" : "translate-y-32 opacity-0"}`}
-      >
-        <button 
-          onClick={() => setCartOpen(true)}
-          className="w-full bg-[#14532D] text-white p-4 rounded-2xl shadow-[0_20px_40px_-10px_rgba(22,163,74,0.5)] flex items-center justify-between hover:scale-[1.02] transition-transform duration-300 group"
-        >
-          <div className="flex flex-col items-start pl-2">
-             <span className="text-[10px] font-bold text-[#22C55E] uppercase tracking-wider mb-0.5">{totalItems} ITEMS ADDED</span>
-             <span className="text-xl font-bold">₹{totalPrice}</span>
-          </div>
-          <div className="flex items-center gap-3 pr-2">
-             <span className="font-semibold text-sm opacity-90 group-hover:opacity-100 transition-opacity">View Cart</span>
-             <div className="bg-white/10 p-2 rounded-lg">
-                <FiShoppingBag className="text-xl" />
-             </div>
-          </div>
-        </button>
-      </div>
-
+      <FloatingCartButton cartCount={totalItems} onOpen={() => setCartOpen(true)} />
       <CartDrawer
         cart={cart}
+        setCart={setCart}
         changeQty={changeQty}
         cartOpen={cartOpen}
         setCartOpen={setCartOpen}
       />
-
-      {/* --- GLOBAL STYLES FOR ANIMATION --- */}
-      <style>{`
-        @keyframes fadeUp {
-          0% { opacity: 0; transform: translateY(20px); }
-          100% { opacity: 1; transform: translateY(0); }
-        }
-        .fade-up { animation: fadeUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
-        
-        .scrollbar-hide::-webkit-scrollbar { display: none; }
-        .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
-      `}</style>
     </div>
   );
 }
 
-// --- COMPONENTS ---
+function GridSection({ products, addToCartOnCard, getQty, handlePlus, handleMinus, toggleWishlist, wishlist }) {
+  if (!products.length) {
+    return <p className="text-gray-500 mt-6">No products found.</p>;
+  }
 
-function CategoryRow({ title, items, index, scroll, addToCartOnCard, getQty, handlePlus, handleMinus, toggleWishlist, wishlist }) {
   return (
-    <div className="relative fade-up" style={{ animationDelay: `${index * 100}ms` }}>
-      <div className="flex justify-between items-end mb-5 px-1">
-        <h2 className="text-2xl font-bold text-[#14532D]">{title}</h2>
-        <div className="flex gap-2">
-           <button onClick={() => scroll(-300)} className="w-9 h-9 rounded-full bg-white border border-[#22C55E]/20 flex items-center justify-center text-[#16A34A] hover:bg-[#22C55E] hover:text-white transition-all shadow-sm"><FaChevronLeft size={12}/></button>
-           <button onClick={() => scroll(300)} className="w-9 h-9 rounded-full bg-white border border-[#22C55E]/20 flex items-center justify-center text-[#16A34A] hover:bg-[#22C55E] hover:text-white transition-all shadow-sm"><FaChevronRight size={12}/></button>
-        </div>
-      </div>
-      
-      <div 
-        id={`row-${index}`}
-        className="flex gap-5 overflow-x-auto scrollbar-hide pb-4 px-1 snap-x"
-      >
-        {items.map((item) => (
-          <div key={item.id} className="snap-start shrink-0 w-[200px]">
-             <ProductCard
-              item={item}
-              addToCartOnCard={addToCartOnCard}
-              qty={getQty(item.id)}
-              handlePlus={() => handlePlus(item.id)}
-              handleMinus={() => handleMinus(item.id)}
-              toggleWishlist={() => toggleWishlist(item.id)}
-              wished={wishlist.includes(item.id)}
-            />
-          </div>
-        ))}
-      </div>
+    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-6 mt-6">
+      {products.map((item) => (
+        <ProductCard
+          key={item.id}
+          item={item}
+          addToCartOnCard={addToCartOnCard}
+          qty={getQty(item.id)}
+          handlePlus={() => handlePlus(item.id)}
+          handleMinus={() => handleMinus(item.id)}
+          toggleWishlist={() => toggleWishlist(item.id)}
+          wished={wishlist.includes(item.id)}
+        />
+      ))}
     </div>
   );
 }
 
-function ProductCard({ item, addToCartOnCard, qty, handlePlus, handleMinus, toggleWishlist, wished, index = 0 }) {
+function ProductCard({ item, addToCartOnCard, qty, handlePlus, handleMinus, toggleWishlist, wished }) {
   return (
-    <div 
-      className="bg-white rounded-2xl border border-[#22C55E]/10 overflow-hidden flex flex-col h-full hover:shadow-xl hover:-translate-y-2 transition-all duration-300 group relative"
-      style={{ animationDelay: `${index * 50}ms` }} // Staggered delay for grid
-    >
-      
-      {/* Wishlist Button */}
-      <button 
-        onClick={(e) => { e.stopPropagation(); toggleWishlist(); }}
-        className="absolute top-3 right-3 z-10 w-9 h-9 rounded-full bg-white/60 backdrop-blur-sm flex items-center justify-center text-gray-400 hover:text-red-500 hover:bg-red-50 transition-all shadow-sm opacity-0 group-hover:opacity-100 transform translate-y-2 group-hover:translate-y-0 duration-300"
-      >
-        {wished ? <FaHeart className="text-red-500" /> : <FaRegHeart />}
-      </button>
+    <div className="relative bg-white rounded-xl shadow hover:shadow-lg transition overflow-hidden group">
+      <div className="relative">
+        <img
+          src={item.img}
+          alt={item.name}
+          className="w-full h-44 object-contain bg-[#f8faf8] p-6"
+        />
+        <div
+          className="
+            absolute bottom-3 left-1/2 -translate-x-1/2 
+            opacity-0 group-hover:opacity-100 
+            transition-all duration-300
+            flex items-center gap-3
+            px-4 py-2 rounded-full 
+          "
+        >
+          <button
+            onClick={toggleWishlist}
+            className="
+              bg-white p-2 rounded-full shadow 
+              hover:bg-gray-100 transition
+              flex items-center justify-center
+            "
+          >
+            {wished ? (
+              <FaHeart className="text-red-500 text-lg" />
+            ) : (
+              <FaRegHeart className="text-gray-700 text-lg" />
+            )}
+          </button>
 
-      {/* Image Area */}
-      <div className="relative h-44 p-6 flex items-center justify-center bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-[#F0FDF4] to-white">
-        <img src={item.img} alt={item.name} className="w-full h-full object-contain group-hover:scale-110 transition-transform duration-500 ease-out drop-shadow-sm" />
-      </div>
-
-      {/* Content Area */}
-      <div className="p-4 flex flex-col flex-1 border-t border-[#F0FDF4]">
-        <div className="flex-1">
-          <h3 className="font-bold text-[#14532D] text-base leading-tight mb-1">{item.name}</h3>
-          <p className="text-xs font-medium text-[#16A34A]/80">{item.weight || "1 unit"}</p>
+          <button
+            onClick={() => addToCartOnCard(item)}
+            className="
+              bg-white text-black 
+              p-2 rounded-full shadow 
+              hover:bg-[#139c42] transition
+              flex items-center justify-center
+            "
+          >
+            <FiShoppingCart className="text-lg" />
+          </button>
         </div>
-        
-        <div className="mt-4 flex items-center justify-between">
-          <span className="text-lg font-bold text-[#14532D]">₹{item.price}</span>
-          
+      </div>
+      <div className="p-3">
+        <p className="text-sm font-semibold">{item.name}</p>
+        <p className="text-[#14532D]/70">₹{item.price}</p>
+        <div className="mt-3">
           {qty > 0 ? (
-             <div className="flex items-center h-9 bg-[#F0FDF4] rounded-lg border border-[#22C55E]/20 overflow-hidden shadow-inner">
-                <button onClick={handleMinus} className="w-9 h-full flex items-center justify-center text-[#16A34A] hover:bg-[#22C55E]/10 transition"><FiMinus size={14} /></button>
-                <span className="w-6 text-center text-sm font-bold text-[#14532D]">{qty}</span>
-                <button onClick={handlePlus} className="w-9 h-full flex items-center justify-center text-[#16A34A] hover:bg-[#22C55E]/10 transition"><FiPlus size={14} /></button>
-             </div>
+            <div className="inline-flex items-center gap-3 bg-[#f3f7f3] px-3 py-1 rounded-lg shadow-sm">
+              <button
+                onClick={handleMinus}
+                className="px-2 py-1 rounded-md bg-white hover:bg-gray-100 transition"
+              >
+                -
+              </button>
+              <div className="min-w-8 text-center font-semibold">{qty}</div>
+              <button
+                onClick={handlePlus}
+                className="px-2 py-1 rounded-md bg-white hover:bg-gray-100 transition"
+              >
+                +
+              </button>
+            </div>
           ) : (
-            <button 
+            <button
               onClick={() => addToCartOnCard(item)}
-              className="px-5 py-2 rounded-xl border border-[#16A34A] text-[#16A34A] text-sm font-bold hover:bg-[#16A34A] hover:text-white transition-all duration-300 shadow-sm hover:shadow-lg hover:shadow-[#16A34A]/30 active:scale-95"
+              className="w-full mt-2 bg-[#16A34A] hover:bg-[#139c42] text-white text-sm py-2 rounded-lg shadow transition"
             >
-              Add
+              Add to Cart
             </button>
           )}
         </div>
       </div>
+
     </div>
   );
 }
 
-function CartDrawer({ cart, changeQty, cartOpen, setCartOpen }) {
+function FloatingCartButton({ cartCount, onOpen }) {
+  return (
+    <button
+      onClick={onOpen}
+      className="fixed bottom-6 right-6 bg-[#16A34A] hover:bg-[#139c42] w-16 h-16 rounded-full shadow-xl text-white text-2xl flex items-center justify-center transition z-9999"
+      aria-label="open cart"
+    >
+      <FiShoppingCart />
+      {cartCount > 0 && (
+        <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs w-6 h-6 rounded-full flex items-center justify-center shadow">
+          {cartCount}
+        </span>
+      )}
+    </button>
+  );
+}
+function CartDrawer({ cart, setCart, changeQty, cartOpen, setCartOpen }) {
   const total = cart.reduce((s, p) => s + (p.price * (p.qty || 0)), 0);
-  const deliveryFee = total > 499 ? 0 : 30;
-  const platformFee = 5;
-  const finalTotal = total + deliveryFee + platformFee;
+
+  const removeItem = (id) => {
+    setCart(prev => prev.filter(p => p.id !== id));
+  };
+
+  const plus = (id) => {
+    const product = cart.find(p => p.id === id);
+    if (product) changeQty(id, (product.qty || 0) + 1);
+  };
+  const minus = (id) => {
+    const product = cart.find(p => p.id === id);
+    if (product) changeQty(id, (product.qty || 0) - 1);
+  };
 
   return (
-    <>
-      {/* BACKDROP */}
-      <div 
-        className={`fixed inset-0 bg-black/30 backdrop-blur-sm z-50 transition-opacity duration-300 ${cartOpen ? "opacity-100" : "opacity-0 pointer-events-none"}`}
-        onClick={() => setCartOpen(false)}
-      />
-
-      {/* DRAWER */}
-      <div className={`fixed inset-y-0 right-0 z-50 w-full sm:w-[450px] bg-white shadow-2xl transform transition-transform duration-500 cubic-bezier(0.16, 1, 0.3, 1) flex flex-col ${cartOpen ? "translate-x-0" : "translate-x-full"}`}>
-        
-        {/* Header */}
-        <div className="flex items-center justify-between p-6 border-b border-[#F0FDF4] bg-white">
-          <h2 className="text-xl font-bold text-[#14532D] flex items-center gap-2">
-            My Cart <span className="bg-[#F0FDF4] text-[#16A34A] text-xs px-2 py-1 rounded-full">{cart.length}</span>
-          </h2>
-          <button onClick={() => setCartOpen(false)} className="p-2 hover:bg-[#F0FDF4] rounded-full text-[#14532D]/60 transition"><FiX size={22}/></button>
-        </div>
-
-        {/* Scrollable Items */}
-        <div className="flex-1 overflow-y-auto p-6 space-y-6 bg-white">
-          {cart.length === 0 ? (
-            <div className="h-full flex flex-col items-center justify-center text-center opacity-60">
-               <div className="w-20 h-20 bg-[#F0FDF4] rounded-full flex items-center justify-center mb-4">
-                  <FiShoppingBag size={32} className="text-[#16A34A]" />
-               </div>
-               <p className="font-bold text-[#14532D] text-lg">Your cart is empty</p>
-               <p className="text-sm text-[#14532D]/60 mt-1 max-w-[200px]">Looks like you haven't added anything to your cart yet.</p>
-               <button onClick={() => setCartOpen(false)} className="mt-6 px-8 py-3 bg-[#16A34A] text-white rounded-xl text-sm font-bold shadow-lg hover:shadow-xl transition">Start Shopping</button>
-            </div>
-          ) : (
-            <>
-              {/* Product List */}
-              <div className="space-y-4">
-                {cart.map((item) => (
-                  <div key={item.id} className="flex gap-4 p-3 rounded-2xl hover:bg-[#F0FDF4]/50 transition border border-transparent hover:border-[#F0FDF4]">
-                    <div className="w-20 h-20 bg-[#F8F9FA] rounded-xl flex items-center justify-center p-2 shrink-0 border border-gray-100">
-                      <img src={item.img} alt={item.name} className="w-full h-full object-contain" />
-                    </div>
-                    <div className="flex-1 flex flex-col justify-between py-1">
-                      <div className="flex justify-between items-start">
-                         <div>
-                            <h4 className="font-bold text-[#14532D] text-sm line-clamp-1">{item.name}</h4>
-                            <p className="text-xs text-[#14532D]/60 mt-0.5">{item.weight}</p>
-                         </div>
-                         <button onClick={() => changeQty(item.id, 0)} className="text-gray-300 hover:text-red-500 transition"><FiTrash2 size={14}/></button>
-                      </div>
-                      
-                      <div className="flex items-center justify-between mt-2">
-                         <div className="flex items-center h-8 bg-white rounded-lg border border-[#22C55E]/20 shadow-sm">
-                            <button onClick={() => changeQty(item.id, item.qty - 1)} className="w-8 h-full flex items-center justify-center text-[#16A34A] hover:bg-[#F0FDF4]"><FiMinus size={12}/></button>
-                            <span className="text-sm font-bold text-[#14532D] w-6 text-center">{item.qty}</span>
-                            <button onClick={() => changeQty(item.id, item.qty + 1)} className="w-8 h-full flex items-center justify-center text-[#16A34A] hover:bg-[#F0FDF4]"><FiPlus size={12}/></button>
-                         </div>
-                         <p className="font-bold text-[#14532D]">₹{item.price * item.qty}</p>
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-
-              {/* Bill Details */}
-              <div className="bg-[#F0FDF4]/50 rounded-2xl p-5 space-y-3 mt-4 border border-[#F0FDF4]">
-                 <h3 className="text-sm font-bold text-[#14532D] mb-2 uppercase tracking-wide">Bill Summary</h3>
-                 <div className="flex justify-between text-sm text-[#14532D]/70">
-                    <span>Item Total</span>
-                    <span>₹{total}</span>
-                 </div>
-                 <div className="flex justify-between text-sm text-[#14532D]/70">
-                    <span>Delivery Fee</span>
-                    <span>{deliveryFee === 0 ? <span className="text-[#16A34A] font-bold">Free</span> : `₹${deliveryFee}`}</span>
-                 </div>
-                 <div className="flex justify-between text-sm text-[#14532D]/70">
-                    <span>Platform Fee</span>
-                    <span>₹{platformFee}</span>
-                 </div>
-                 <div className="border-t border-[#16A34A]/10 pt-3 mt-2 flex justify-between text-lg font-extrabold text-[#14532D]">
-                    <span>To Pay</span>
-                    <span>₹{finalTotal}</span>
-                 </div>
-              </div>
-            </>
-          )}
-        </div>
-
-        {/* Footer */}
-        {cart.length > 0 && (
-          <div className="bg-white p-6 border-t border-[#F0FDF4] shadow-[0_-10px_40px_rgba(0,0,0,0.05)]">
-             <button className="w-full bg-[#16A34A] text-white py-4 rounded-xl font-bold text-lg shadow-lg hover:bg-[#14532D] hover:shadow-[#16A34A]/40 transition-all duration-300 active:scale-[0.98] flex items-center justify-center gap-2 group">
-                <span>Checkout</span>
-                <span className="bg-white/20 px-2 py-0.5 rounded text-sm group-hover:bg-white/30 transition">₹{finalTotal}</span>
-             </button>
-          </div>
-        )}
+    <div
+      className={`fixed top-0 right-0 h-full w-96 bg-white shadow-2xl p-6 z-50 transition-transform duration-300 ${cartOpen ? "translate-x-0" : "translate-x-full"}`}
+      aria-hidden={!cartOpen}
+    >
+      <div className="flex items-center justify-between">
+        <h2 className="text-2xl font-bold text-[#14532D]">Your Cart</h2>
+        <button onClick={() => setCartOpen(false)} className="text-gray-500 text-xl">✖</button>
       </div>
-    </>
+
+      <div className="mt-6 space-y-4 overflow-y-auto h-[70%]">
+        {cart.length === 0 && <p className="text-gray-500">Your cart is empty.</p>}
+
+        {cart.map((item, i) => (
+          <div key={i} className="flex items-center gap-4 bg-gray-50 p-3 rounded-lg">
+            <img src={item.img} alt={item.name} className="w-16 h-16 rounded-md object-cover" />
+            <div className="flex-1">
+              <p className="font-semibold">{item.name}</p>
+              <p className="text-[#14532D]/70">₹{item.price}</p>
+              <div className="mt-2 inline-flex items-center gap-2">
+                <button onClick={() => minus(item.id)} className="px-2 py-1 rounded bg-white shadow">-</button>
+                <div className="min-w-8 text-center">{item.qty || 0}</div>
+                <button onClick={() => plus(item.id)} className="px-2 py-1 rounded bg-white shadow">+</button>
+              </div>
+            </div>
+            <button onClick={() => removeItem(item.id)} className="text-red-500 text-xl">🗑</button>
+          </div>
+        ))}
+      </div>
+
+      {cart.length > 0 && (
+        <div className="mt-6">
+          <div className="flex justify-between items-center text-lg mb-4">
+            <div className="font-semibold">Total</div>
+            <div className="font-bold">₹{total}</div>
+          </div>
+          <button className="w-full bg-[#16A34A] hover:bg-[#139c42] text-white py-3 rounded-xl text-lg font-semibold">Checkout</button>
+        </div>
+      )}
+    </div>
   );
 }
