@@ -14,10 +14,15 @@ import milk from "../assets/Milk.png";
 import drink from "../assets/drinks.png";
 import bake from "../assets/bakery.png";
 import Navbar from "./Navbar";
+import HowItWorksModal from "./HowItWorksModal";
+
 
 
 export default function Landing() {
   const [loading, setLoading] = useState(true);
+
+  const [howOpen, setHowOpen] = useState(false);
+
 
   const testimonials = [
     {
@@ -84,14 +89,20 @@ export default function Landing() {
           </p>
 
           <div className="mt-8 flex gap-5">
-            <Link to="/shop">
+            <Link to="/items">
               <button className="bg-[#16A34A] text-white px-8 py-4 rounded-xl text-xl font-semibold shadow hover:bg-[#22C55E] transition">
                 Shop Now
               </button>
             </Link>
-            <a href="#how" className="border border-[#14532D] text-[#14532D] px-7 py-4 text-xl rounded-xl hover:bg-[#22C55E]/15 transition">
-              How it works
-            </a>
+
+            <button
+  onClick={() => setHowOpen(true)}
+  className="border border-[#14532D] text-[#14532D] px-7 py-4 text-xl rounded-xl hover:bg-[#22C55E]/15 transition"
+>
+  How it works
+</button>
+
+
           </div>
 
         </div>
@@ -303,6 +314,10 @@ export default function Landing() {
     © {new Date().getFullYear()} UniMart — All rights reserved.
   </p>
 </footer>
+<HowItWorksModal
+  open={howOpen}
+  onClose={() => setHowOpen(false)}
+/>
 
 
       <style>{`
