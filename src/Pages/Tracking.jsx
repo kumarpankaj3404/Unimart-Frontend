@@ -3,6 +3,8 @@ import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 import Navbar from "./Navbar";
 
+/* ================= LEAFLET ICON FIX ================= */
+// Fixes default icon paths in Webpack/Vite
 try {
   delete L.Icon.Default.prototype._getIconUrl;
 } catch {}
@@ -15,6 +17,7 @@ L.Icon.Default.mergeOptions({
     "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-shadow.png",
 });
 
+/* ================= ICONS ================= */
 const createScooterIcon = () => {
   return L.divIcon({
     className: "bg-transparent",
@@ -25,6 +28,7 @@ const createScooterIcon = () => {
         <img 
           src="https://cdn-icons-png.flaticon.com/512/1986/1986937.png" 
           class="relative z-10 w-10 h-10 object-contain"
+          alt="scooter"
         />
       </div>
     `,
@@ -46,12 +50,11 @@ const destinationIcon = new L.Icon({
   iconAnchor: [20, 40],
 });
 
-/* ================= LOCATIONS ================= */
+/* ================= CONSTANTS & HELPERS ================= */
 const RESTAURANT = [28.6315, 77.2167];
 const DESTINATION = [28.6508, 77.2773];
 const SPEED_KMH = 40;
 
-/* ================= HELPERS ================= */
 const toRad = (v) => (v * Math.PI) / 180;
 const distanceKm = (a, b) => {
   const R = 6371;
@@ -66,7 +69,7 @@ const distanceKm = (a, b) => {
 };
 const lerp = (a, b, t) => a + (b - a) * t;
 
-/* ================= FETCH ROUTE ================= */
+/* ================= ROUTING API ================= */
 async function fetchRoadRoute(from, to) {
   try {
     const url = `https://router.project-osrm.org/route/v1/driving/${from[1]},${from[0]};${to[1]},${to[0]}?overview=full&geometries=geojson`;
@@ -75,7 +78,8 @@ async function fetchRoadRoute(from, to) {
     const data = await res.json();
     return data.routes[0].geometry.coordinates.map(([lng, lat]) => [lat, lng]);
   } catch (e) {
-    return [from, to];
+    console.warn("OSRM Failed, using fallback line", e);
+    return [from, to]; // Fallback to straight line
   }
 }
 
@@ -91,19 +95,23 @@ export default function Tracking() {
   const [step, setStep] = useState(2);
   const [progress, setProgress] = useState(0);
 
-  // 1. Setup Data
+  // 1. Load Data
   useEffect(() => {
-    fetchRoadRoute(RESTAURANT, DESTINATION).then(setRoute);
+    let mounted = true;
+    fetchRoadRoute(RESTAURANT, DESTINATION).then((data) => {
+      if (mounted) setRoute(data);
+    });
+    return () => { mounted = false; };
   }, []);
 
-  // 2. Setup Map
+  // 2. Initialize Map
   useEffect(() => {
     if (!mapRef.current || !route.length) return;
-    if (mapInstance.current) return;
+    if (mapInstance.current) return; // Prevent double init
 
     const map = L.map(mapRef.current, {
       center: RESTAURANT,
-      zoom: 18,
+      zoom: 16,
       zoomControl: false,
     });
 
@@ -111,13 +119,15 @@ export default function Tracking() {
       attribution: "&copy; OpenStreetMap",
     }).addTo(map);
 
+    // Draw Path
     L.polyline(route, {
       color: "#3B82F6",
-      weight: 8,
+      weight: 6,
       opacity: 0.8,
       lineCap: "round",
     }).addTo(map);
 
+    // Add Markers
     L.marker(RESTAURANT, { icon: restaurantIcon }).addTo(map);
     L.marker(DESTINATION, { icon: destinationIcon }).addTo(map);
 
@@ -126,10 +136,11 @@ export default function Tracking() {
       zIndexOffset: 1000,
     }).addTo(map);
 
-    map.setView(route[0], 18);
+    map.fitBounds(L.latLngBounds(route), { padding: [50, 50] });
 
+    // User Interaction Listeners (Stop auto-follow when user drags)
     const startInteract = () => { isUserInteracting.current = true; };
-    const stopInteract = () => { setTimeout(() => { isUserInteracting.current = false; }, 3000); };
+    const stopInteract = () => { setTimeout(() => { isUserInteracting.current = false; }, 4000); };
     
     map.on("dragstart", startInteract);
     map.on("dragend", stopInteract);
@@ -137,10 +148,24 @@ export default function Tracking() {
     map.on("zoomend", stopInteract);
 
     mapInstance.current = map;
-    return () => { map.remove(); mapInstance.current = null; };
+
+    return () => {
+      map.remove();
+      mapInstance.current = null;
+    };
   }, [route]);
 
-  // 3. Animation Loop
+  // 3. Fix Map Resize Issue
+  useEffect(() => {
+    // When window resizes (mobile orientation change), force map to recalculate size
+    const handleResize = () => {
+      if (mapInstance.current) mapInstance.current.invalidateSize();
+    };
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
+
+  // 4. Animation Loop
   useEffect(() => {
     if (!mapInstance.current || !scooterRef.current || !route.length) return;
 
@@ -165,8 +190,9 @@ export default function Tracking() {
       const pos = [lerp(from[0], to[0], localProgress), lerp(from[1], to[1], localProgress)];
       scooterRef.current.setLatLng(pos);
 
+      // Smart Follow Logic
       if (!isUserInteracting.current) {
-        mapInstance.current.panTo(pos, { animate: true, duration: 0.1 });
+        mapInstance.current.panTo(pos, { animate: true, duration: 0.1, easeLinearity: 0.1 });
       }
 
       // Progress Calculation
@@ -174,14 +200,17 @@ export default function Tracking() {
       const currentPercent = ((seg + localProgress) / totalSegments) * 100;
       setProgress(currentPercent);
 
+      // ETA
       const d = distanceKm(pos, DESTINATION);
       setEta(Math.ceil((d / SPEED_KMH) * 60));
 
+      // Steps Logic
       if (currentPercent > 90) setStep(4);
       else if (currentPercent > 10) setStep(3);
 
-      if (localProgress < 1) raf = requestAnimationFrame(animate);
-      else {
+      if (localProgress < 1) {
+        raf = requestAnimationFrame(animate);
+      } else {
         seg++;
         start = null;
         if (seg < route.length - 1) raf = requestAnimationFrame(animate);
@@ -191,36 +220,23 @@ export default function Tracking() {
     raf = requestAnimationFrame(animate);
     return () => cancelAnimationFrame(raf);
   }, [route]);
+
   return (
     <>
       <Navbar />
+      
+      {/* LAYOUT FIXES:
+        1. pt-20 lg:pt-24: Clears the fixed Navbar height.
+        2. h-screen: Forces full viewport height so map doesn't scroll away.
+      */}
       <div className="flex flex-col lg:flex-row h-screen w-full bg-gray-50 overflow-hidden font-sans pt-20 lg:pt-24">
-
-        {/* Mobile Floating Badge (Hidden on large desktop to keep clean) */}
-        <div className="absolute top-4 left-4 z-400 bg-white/90 backdrop-blur shadow-lg rounded-full px-4 py-2 flex items-center gap-2 lg:hidden">
-           <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
-           <span className="text-sm font-bold text-gray-800">Live • {eta} min</span>
-        </div>
-      </div>
-
-      {/* --- DETAILS SECTION (UPDATED FOR DESKTOP SIZE) --- */}
-      <div className="
-        shrink-0 
-        h-[40vh] lg:h-full 
-        /* UPDATED WIDTHS HERE: Wider for desktop */
-        lg:w-[450px] xl:w-[500px]
-        bg-white shadow-[0_-5px_20px_rgba(0,0,0,0.1)] lg:shadow-xl lg:border-l border-gray-200
-        relative z-10 
-        order-2 lg:order-2
-        flex flex-col
-      ">
-        {/* Scrollable Content */}
-        <div className="flex-1 overflow-y-auto p-6 lg:p-8 flex flex-col justify-between">
+        
         {/* --- MAP SECTION --- */}
-        <div className="flex-1 relative z-0 order-1 lg:order-1 h-[60vh] lg:h-auto">
+        {/* Mobile: h-[50vh] ensures map takes half screen. Desktop: flex-1 takes remaining width. */}
+        <div className="relative z-0 order-1 lg:order-1 h-[50vh] lg:h-auto flex-1 w-full">
           <div ref={mapRef} className="w-full h-full" />
           
-          {/* Mobile Floating Badge */}
+          {/* Mobile Floating ETA Badge */}
           <div className="absolute top-4 left-4 z-[400] bg-white/90 backdrop-blur shadow-lg rounded-full px-4 py-2 flex items-center gap-2 lg:hidden">
             <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
             <span className="text-sm font-bold text-gray-800">Live • {eta} min</span>
@@ -228,20 +244,20 @@ export default function Tracking() {
         </div>
 
         {/* --- DETAILS SECTION --- */}
-        {/* <div className="
+        <div className="
           shrink-0 
-          h-[40vh] lg:h-full 
+          h-[50vh] lg:h-full 
           lg:w-[450px] xl:w-[500px]
           bg-white shadow-[0_-5px_20px_rgba(0,0,0,0.1)] lg:shadow-xl lg:border-l border-gray-200
           relative z-10 
           order-2 lg:order-2
           flex flex-col
-        "> */}
+        ">
           {/* Scrollable Content */}
           <div className="flex-1 overflow-y-auto p-6 lg:p-8 flex flex-col justify-between">
             
             <div>
-              {/* Status & Progress */}
+              {/* Status Header */}
               <div className="mb-6 lg:mb-8">
                 <h2 className="text-2xl lg:text-3xl font-extrabold text-gray-900 tracking-tight">
                   {step === 4 ? "Arriving Now" : step === 3 ? "On the way" : "Picked Up"}
@@ -250,7 +266,7 @@ export default function Tracking() {
                   Reaching destination in <span className="text-blue-600 font-bold">{eta} mins</span>
                 </p>
                 
-                {/* PROGRESS BAR */}
+                {/* Progress Bar */}
                 <div className="w-full h-2 lg:h-3 bg-gray-100 rounded-full overflow-hidden">
                   <div
                     className="h-full bg-blue-600 transition-all duration-300 ease-linear rounded-full"
@@ -316,6 +332,6 @@ export default function Tracking() {
           </div>
         </div>
       </div>
-      </>
-    )
+    </>
+  );
 }
