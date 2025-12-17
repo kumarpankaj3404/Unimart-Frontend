@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
+import Navbar from "./Navbar";
 
 /* ================= LEAFLET ICON FIX ================= */
 try {
@@ -194,108 +195,113 @@ export default function Tracking() {
   }, [route]);
 
   return (
-    <div className="flex flex-col lg:flex-row h-screen w-full bg-gray-50 overflow-hidden font-sans">
-      
-      {/* --- MAP SECTION --- */}
-      <div className="flex-1 relative z-0 order-1 lg:order-1 h-[60vh] lg:h-auto">
-        <div ref={mapRef} className="w-full h-full" />
+    <>
+      <Navbar />
+      {/* LAYOUT FIX: Added 'pt-20 lg:pt-24' to create space for the fixed Navbar.
+         This ensures the map and sidebar start BELOW the navbar, not behind it.
+      */}
+      <div className="flex flex-col lg:flex-row h-screen w-full bg-gray-50 overflow-hidden font-sans pt-20 lg:pt-24">
         
-        {/* Mobile Floating Badge (Hidden on large desktop to keep clean) */}
-        <div className="absolute top-4 left-4 z-[400] bg-white/90 backdrop-blur shadow-lg rounded-full px-4 py-2 flex items-center gap-2 lg:hidden">
-           <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
-           <span className="text-sm font-bold text-gray-800">Live • {eta} min</span>
-        </div>
-      </div>
-
-      {/* --- DETAILS SECTION (UPDATED FOR DESKTOP SIZE) --- */}
-      <div className="
-        shrink-0 
-        h-[40vh] lg:h-full 
-        /* UPDATED WIDTHS HERE: Wider for desktop */
-        lg:w-[450px] xl:w-[500px]
-        bg-white shadow-[0_-5px_20px_rgba(0,0,0,0.1)] lg:shadow-xl lg:border-l border-gray-200
-        relative z-10 
-        order-2 lg:order-2
-        flex flex-col
-      ">
-        {/* Scrollable Content */}
-        <div className="flex-1 overflow-y-auto p-6 lg:p-8 flex flex-col justify-between">
+        {/* --- MAP SECTION --- */}
+        <div className="flex-1 relative z-0 order-1 lg:order-1 h-[60vh] lg:h-auto">
+          <div ref={mapRef} className="w-full h-full" />
           
-          <div>
-            {/* Status & Progress */}
-            <div className="mb-6 lg:mb-8">
-              <h2 className="text-2xl lg:text-3xl font-extrabold text-gray-900 tracking-tight">
-                {step === 4 ? "Arriving Now" : step === 3 ? "On the way" : "Picked Up"}
-              </h2>
-              <p className="text-sm lg:text-base text-gray-500 mb-4 mt-1 font-medium">
-                Reaching destination in <span className="text-blue-600 font-bold">{eta} mins</span>
-              </p>
-              
-              {/* PROGRESS BAR */}
-              <div className="w-full h-2 lg:h-3 bg-gray-100 rounded-full overflow-hidden">
-                <div
-                  className="h-full bg-blue-600 transition-all duration-300 ease-linear rounded-full"
-                  style={{ width: `${progress}%` }} 
-                />
-              </div>
-            </div>
+          {/* Mobile Floating Badge */}
+          <div className="absolute top-4 left-4 z-[400] bg-white/90 backdrop-blur shadow-lg rounded-full px-4 py-2 flex items-center gap-2 lg:hidden">
+            <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+            <span className="text-sm font-bold text-gray-800">Live • {eta} min</span>
+          </div>
+        </div>
 
-            {/* Driver Card */}
-            <div className="bg-gray-50 rounded-2xl p-4 lg:p-5 flex items-center gap-4 border border-gray-100 mb-6 lg:mb-8 shadow-sm">
-              <div className="relative">
-                <img 
-                  src="https://images.unsplash.com/photo-1633332755192-727a05c4013d?w=100&auto=format&fit=crop&q=60" 
-                  alt="Driver" 
-                  className="w-12 h-12 lg:w-14 lg:h-14 rounded-full object-cover border-2 border-white shadow-sm"
-                />
-                <div className="absolute -bottom-1 -right-1 bg-green-500 border-2 border-white w-4 h-4 rounded-full"></div>
-              </div>
-              <div className="flex-1">
-                <h3 className="font-bold text-gray-900 text-lg">Rahul Kumar</h3>
-                <div className="text-xs lg:text-sm text-gray-500 font-medium">Blue Scooter • ★ 4.8</div>
-              </div>
-              <button className="w-10 h-10 lg:w-12 lg:h-12 bg-white rounded-full border border-gray-200 flex items-center justify-center text-blue-600 shadow-sm hover:bg-blue-50 transition-colors">
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
-                </svg>
-              </button>
-            </div>
-
-            {/* Order Details */}
+        {/* --- DETAILS SECTION --- */}
+        <div className="
+          shrink-0 
+          h-[40vh] lg:h-full 
+          lg:w-[450px] xl:w-[500px]
+          bg-white shadow-[0_-5px_20px_rgba(0,0,0,0.1)] lg:shadow-xl lg:border-l border-gray-200
+          relative z-10 
+          order-2 lg:order-2
+          flex flex-col
+        ">
+          {/* Scrollable Content */}
+          <div className="flex-1 overflow-y-auto p-6 lg:p-8 flex flex-col justify-between">
+            
             <div>
-              <h3 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-4">Your Order</h3>
-              <div className="space-y-4">
-                <div className="flex justify-between items-center">
-                  <div className="flex gap-3 items-center">
-                      <span className="text-xs font-bold text-gray-600 bg-gray-100 px-2 py-1 rounded">1x</span>
-                      <span className="text-sm lg:text-base font-medium text-gray-900">Veg Maharaja Burger</span>
-                  </div>
-                  <span className="text-sm lg:text-base font-semibold text-gray-900">₹149</span>
+              {/* Status & Progress */}
+              <div className="mb-6 lg:mb-8">
+                <h2 className="text-2xl lg:text-3xl font-extrabold text-gray-900 tracking-tight">
+                  {step === 4 ? "Arriving Now" : step === 3 ? "On the way" : "Picked Up"}
+                </h2>
+                <p className="text-sm lg:text-base text-gray-500 mb-4 mt-1 font-medium">
+                  Reaching destination in <span className="text-blue-600 font-bold">{eta} mins</span>
+                </p>
+                
+                {/* PROGRESS BAR */}
+                <div className="w-full h-2 lg:h-3 bg-gray-100 rounded-full overflow-hidden">
+                  <div
+                    className="h-full bg-blue-600 transition-all duration-300 ease-linear rounded-full"
+                    style={{ width: `${progress}%` }} 
+                  />
                 </div>
-                <div className="flex justify-between items-center">
-                  <div className="flex gap-3 items-center">
-                      <span className="text-xs font-bold text-gray-600 bg-gray-100 px-2 py-1 rounded">1x</span>
-                      <span className="text-sm lg:text-base font-medium text-gray-900">Peri Peri Fries</span>
+              </div>
+
+              {/* Driver Card */}
+              <div className="bg-gray-50 rounded-2xl p-4 lg:p-5 flex items-center gap-4 border border-gray-100 mb-6 lg:mb-8 shadow-sm">
+                <div className="relative">
+                  <img 
+                    src="https://images.unsplash.com/photo-1633332755192-727a05c4013d?w=100&auto=format&fit=crop&q=60" 
+                    alt="Driver" 
+                    className="w-12 h-12 lg:w-14 lg:h-14 rounded-full object-cover border-2 border-white shadow-sm"
+                  />
+                  <div className="absolute -bottom-1 -right-1 bg-green-500 border-2 border-white w-4 h-4 rounded-full"></div>
+                </div>
+                <div className="flex-1">
+                  <h3 className="font-bold text-gray-900 text-lg">Rahul Kumar</h3>
+                  <div className="text-xs lg:text-sm text-gray-500 font-medium">Blue Scooter • ★ 4.8</div>
+                </div>
+                <button className="w-10 h-10 lg:w-12 lg:h-12 bg-white rounded-full border border-gray-200 flex items-center justify-center text-blue-600 shadow-sm hover:bg-blue-50 transition-colors">
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
+                  </svg>
+                </button>
+              </div>
+
+              {/* Order Details */}
+              <div>
+                <h3 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-4">Your Order</h3>
+                <div className="space-y-4">
+                  <div className="flex justify-between items-center">
+                    <div className="flex gap-3 items-center">
+                        <span className="text-xs font-bold text-gray-600 bg-gray-100 px-2 py-1 rounded">1x</span>
+                        <span className="text-sm lg:text-base font-medium text-gray-900">Veg Maharaja Burger</span>
+                    </div>
+                    <span className="text-sm lg:text-base font-semibold text-gray-900">₹149</span>
                   </div>
-                  <span className="text-sm lg:text-base font-semibold text-gray-900">₹80</span>
+                  <div className="flex justify-between items-center">
+                    <div className="flex gap-3 items-center">
+                        <span className="text-xs font-bold text-gray-600 bg-gray-100 px-2 py-1 rounded">1x</span>
+                        <span className="text-sm lg:text-base font-medium text-gray-900">Peri Peri Fries</span>
+                    </div>
+                    <span className="text-sm lg:text-base font-semibold text-gray-900">₹80</span>
+                  </div>
                 </div>
               </div>
             </div>
-          </div>
-          
-          {/* Footer Bill */}
-          <div className="mt-6 pt-6 border-t border-dashed border-gray-200">
-             <div className="flex justify-between items-end mb-2">
-                <span className="text-sm text-gray-500 font-medium">Total Amount</span>
-                <span className="text-xl lg:text-2xl font-extrabold text-gray-900">₹269.00</span>
-             </div>
-             <div className="w-full bg-green-50 text-green-700 text-xs font-bold px-3 py-2 rounded-lg text-center border border-green-100 uppercase tracking-wide">
-                Paid via UPI
-             </div>
-          </div>
+            
+            {/* Footer Bill */}
+            <div className="mt-6 pt-6 border-t border-dashed border-gray-200">
+              <div className="flex justify-between items-end mb-2">
+                  <span className="text-sm text-gray-500 font-medium">Total Amount</span>
+                  <span className="text-xl lg:text-2xl font-extrabold text-gray-900">₹269.00</span>
+              </div>
+              <div className="w-full bg-green-50 text-green-700 text-xs font-bold px-3 py-2 rounded-lg text-center border border-green-100 uppercase tracking-wide">
+                  Paid via UPI
+              </div>
+            </div>
 
+          </div>
         </div>
       </div>
-    </div>
+    </>
   );
 }
