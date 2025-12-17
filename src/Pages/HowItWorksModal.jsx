@@ -70,7 +70,7 @@ export default function HowItWorksModal({ open, onClose }) {
                          text-white text-lg font-bold rounded-2xl
                          shadow-lg hover:scale-[1.03] transition"
             >
-              Start Shopping 🚀
+              Start Shopping 
             </button>
           </div>
         </div>
