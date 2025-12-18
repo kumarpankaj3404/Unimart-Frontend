@@ -1,42 +1,18 @@
-import React, { useEffect, useState } from "react";
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-import { Link, useLocation } from "react-router-dom";
-import { HiMenuAlt3, HiX } from "react-icons/hi";
+import React, { useEffect, useState, useRef } from "react";
+import { Link, useLocation, useNavigate } from "react-router-dom";
+import { HiMenuAlt3, HiX, HiOutlineUser, HiOutlineClock, HiOutlineLocationMarker, HiOutlineHeart, HiOutlineLogout, HiOutlineShoppingBag } from "react-icons/hi";
 import { BsSunFill, BsMoonStarsFill } from "react-icons/bs";
-import { FaUserCircle } from "react-icons/fa";
-=======
-=======
->>>>>>> Stashed changes
-import { Link, useNavigate } from "react-router-dom";
-import { HiMenu, HiX, HiChevronDown } from "react-icons/hi";
-import { BsSun, BsMoon } from "react-icons/bs";
-import {
-  HiOutlineUser,
-  HiOutlineShoppingBag,
-  HiOutlineLocationMarker,
-  HiOutlineLogout,
-} from "react-icons/hi";
-<<<<<<< Updated upstream
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
 
 export default function Navbar() {
-  const navigate = useNavigate();
   const [theme, setTheme] = useState("light");
   const [open, setOpen] = useState(false);
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
   const [user, setUser] = useState(null);
   const [scrolled, setScrolled] = useState(false);
+  const [showUserMenu, setShowUserMenu] = useState(false);
+
   const location = useLocation();
-=======
-=======
->>>>>>> Stashed changes
-  const [showDropdown, setShowDropdown] = useState(false);
-  const [user, setUser] = useState(null); 
->>>>>>> Stashed changes
+  const navigate = useNavigate();
+  const userMenuRef = useRef(null);
 
   // Handle Scroll Effect
   useEffect(() => {
@@ -48,68 +24,67 @@ export default function Navbar() {
   // Handle User & Theme Loading
   useEffect(() => {
     const savedUser = localStorage.getItem("user");
-    if (savedUser) setUser(JSON.parse(savedUser));
+    if (savedUser) {
+      const userData = JSON.parse(savedUser);
+      if (userData.type === "customer" || !userData.type) {
+        setUser(userData);
+      }
+    }
 
     const savedTheme = localStorage.getItem("theme");
-    if (savedTheme) setTheme(savedTheme);
-    else if (window.matchMedia("(prefers-color-scheme: dark)").matches) {
-      setTheme("dark");
+    if (savedTheme) {
+      setTheme(savedTheme);
     }
+    // Removed auto keying to dark mode based on system preference
   }, []);
 
   // Theme Switching Logic
   useEffect(() => {
     if (theme === "dark") {
       document.documentElement.classList.add("dark");
+      document.body.classList.add("dark");
     } else {
       document.documentElement.classList.remove("dark");
+      document.body.classList.remove("dark");
     }
     localStorage.setItem("theme", theme);
   }, [theme]);
 
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-=======
-=======
->>>>>>> Stashed changes
+  // Click Outside for User Menu
   useEffect(() => {
     const handleClickOutside = (event) => {
-      if (showDropdown && !event.target.closest('.dropdown-container')) {
-        setShowDropdown(false);
+      if (userMenuRef.current && !userMenuRef.current.contains(event.target)) {
+        setShowUserMenu(false);
       }
     };
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, [showDropdown]);
-<<<<<<< Updated upstream
-=======
 
->>>>>>> Stashed changes
+    if (showUserMenu) {
+      document.addEventListener("mousedown", handleClickOutside);
+    }
 
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [showUserMenu]);
 
->>>>>>> Stashed changes
   const handleLogout = () => {
     localStorage.removeItem("user");
     setUser(null);
-    setShowDropdown(false);
+    setShowUserMenu(false);
     navigate("/");
-<<<<<<< Updated upstream
-=======
-  };
-
-  const handleDashboardClick = () => {
-    navigate("/dashboard");
-    setShowDropdown(false);
->>>>>>> Stashed changes
-  };
-
-  const handleDashboardClick = () => {
-    navigate("/dashboard");
-    setShowDropdown(false);
   };
 
   const toggleTheme = () => {
     setTheme(theme === "light" ? "dark" : "light");
+  };
+
+  const getInitials = (name) => {
+    if (!name) return "U";
+    const words = name.trim().split(" ");
+    if (words.length >= 2) {
+      return (words[0][0] + words[1][0]).toUpperCase();
+    }
+    return name.substring(0, 2).toUpperCase();
   };
 
   const navLinks = [
@@ -128,10 +103,9 @@ export default function Navbar() {
             transition-all duration-300 ease-in-out
             rounded-full px-6
             flex items-center justify-between
-            ${
-              scrolled
-                ? "py-3 bg-white/80 backdrop-blur-md shadow-lg border border-gray-200/50 dark:border-gray-500/50"
-                : "py-4 bg-white border-0"
+            ${scrolled
+              ? "py-3 bg-white/80 backdrop-blur-md shadow-lg border border-gray-200/50"
+              : "py-4 bg-white border-0"
             }
           `}
         >
@@ -140,7 +114,7 @@ export default function Navbar() {
             <div className="w-8 h-8 bg-green-600 rounded-lg flex items-center justify-center text-white font-bold text-xl group-hover:rotate-12 transition-transform">
               U
             </div>
-            <h1 className="text-2xl font-bold tracking-tight text-gray-800 ">
+            <h1 className="text-2xl font-bold tracking-tight text-gray-800">
               Uni<span className="text-green-600">Mart</span>
             </h1>
           </Link>
@@ -155,10 +129,9 @@ export default function Navbar() {
                     to={link.path}
                     className={`
                       px-4 py-2 rounded-full text-sm font-medium transition-all duration-200
-                      ${
-                        isActive
-                          ? "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-600"
-                          : "text-gray-800 dark:text-gray-600 hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-green-600"
+                      ${isActive
+                        ? "bg-green-100 text-green-700"
+                        : "text-gray-800 hover:bg-gray-100 hover:text-green-600"
                       }
                     `}
                   >
@@ -171,11 +144,11 @@ export default function Navbar() {
 
           {/* --- RIGHT ACTIONS --- */}
           <div className="hidden md:flex items-center gap-4">
-            
+
             {/* Theme Toggle (Modern Icon Button) */}
             <button
               onClick={toggleTheme}
-              className="p-2 rounded-full text-gray-500 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-800 transition-colors"
+              className="p-2 rounded-full text-gray-500 hover:bg-gray-100 transition-colors"
               aria-label="Toggle Theme"
             >
               {theme === "light" ? (
@@ -186,36 +159,135 @@ export default function Navbar() {
             </button>
 
             {/* Divider */}
-            <div className="h-6 w-[1px] bg-gray-300 dark:bg-gray-700"></div>
+            <div className="h-6 w-[1px] bg-gray-300"></div>
 
-<<<<<<< Updated upstream
             {/* Auth State */}
             {user ? (
-              <div className="flex items-center gap-3 pl-2">
+              <div className="flex items-center gap-3 pl-2" ref={userMenuRef}>
                 <div className="text-right hidden lg:block">
-                  <p className="text-xs text-gray-500 dark:text-gray-400">Welcome back,</p>
-                  <p className="text-sm font-bold text-gray-800 dark:text-white leading-none">{user.name}</p>
+                  <p className="text-xs text-gray-500">Welcome back,</p>
+                  <p className="text-sm font-bold text-gray-800 leading-none">{user.name.split(" ")[0]}</p>
                 </div>
-                <div className="relative group cursor-pointer">
-                  <img
-                    src={user.avatar || "https://ui-avatars.com/api/?name=" + user.name}
-                    alt="User"
-                    className="w-10 h-10 rounded-full border-2 border-white shadow-sm object-cover"
-                  />
-                  {/* Hover Dropdown for Logout */}
-                  <div className="absolute right-0 top-12 w-32 bg-white dark:bg-gray-800 shadow-xl rounded-xl border border-gray-100 dark:border-gray-700 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all transform origin-top-right scale-95 group-hover:scale-100">
-                    <button
-                      onClick={handleLogout}
-                      className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-xl font-medium"
-                    >
-                      Logout
-                    </button>
-                  </div>
+
+                <div className="relative">
+                  <button
+                    onClick={() => setShowUserMenu(!showUserMenu)}
+                    className="relative group cursor-pointer focus:outline-none"
+                  >
+                    {user.avatar ? (
+                      <img
+                        src={user.avatar}
+                        alt="User"
+                        className="w-10 h-10 rounded-full border-2 border-white shadow-sm object-cover"
+                      />
+                    ) : (
+                      <div className="w-10 h-10 rounded-full bg-[#16A34A] text-white flex items-center justify-center font-bold text-lg shadow-lg border-2 border-white">
+                        {getInitials(user.name)}
+                      </div>
+                    )}
+                  </button>
+
+                  {/* --- RICH USER DROPDOWN (Forced White Mode) --- */}
+                  {showUserMenu && (
+                    <div className="absolute right-0 mt-4 w-80 rounded-3xl z-50 animate-spring-enter
+                      bg-white shadow-[0_20px_60px_-15px_rgba(0,0,0,0.3)] ring-1 ring-black/5
+                    ">
+
+                      {/* Header */}
+                      <div className="relative p-6 bg-gradient-to-br from-green-600 to-emerald-500 text-white overflow-hidden rounded-t-3xl">
+                        <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full blur-2xl -translate-y-16 translate-x-16 pointer-events-none"></div>
+                        <div className="absolute bottom-0 left-0 w-24 h-24 bg-black/10 rounded-full blur-xl translate-y-12 -translate-x-8 pointer-events-none"></div>
+
+                        <div className="flex items-center gap-4 relative z-10">
+                          <div className="w-12 h-12 rounded-2xl bg-white text-[#16A34A] flex items-center justify-center font-extrabold text-xl shadow-xl transform rotate-3">
+                            {getInitials(user.name)}
+                          </div>
+                          <div>
+                            <p className="font-medium text-white/90 text-sm">Signed in as</p>
+                            <p className="font-bold text-white text-sm bg-white/20 px-2 py-0.5 rounded-full inline-block truncate max-w-[160px]">
+                              {user.email}
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="p-3 bg-white rounded-b-3xl">
+                        <div className="space-y-1">
+
+                          <div className="px-3 py-2 text-[10px] font-bold text-gray-400 uppercase tracking-widest">My Account</div>
+
+                          {[
+                            { to: "/profile", icon: HiOutlineUser, label: "Profile", sub: "Personal details" },
+                            { to: "/orders", icon: HiOutlineClock, label: "Orders", sub: "Track & history" },
+                            { to: "/addresses", icon: HiOutlineLocationMarker, label: "Addresses", sub: "Delivery spots" }
+                          ].map((item, idx) => (
+                            <Link
+                              key={idx}
+                              to={item.to}
+                              onClick={() => setShowUserMenu(false)}
+                              className="flex items-center gap-4 px-3 py-2.5 rounded-xl hover:bg-green-50/80 transition-all duration-200 group relative overflow-hidden"
+                            >
+                              <div className="w-10 h-10 rounded-lg bg-gray-50 flex items-center justify-center text-gray-500 group-hover:bg-white group-hover:text-[#16A34A] group-hover:shadow-md transition-all duration-300 group-hover:scale-110">
+                                <item.icon className="text-xl" />
+                              </div>
+                              <div>
+                                <span className="font-semibold text-gray-700 block text-sm group-hover:text-gray-900">{item.label}</span>
+                                <span className="text-[11px] text-gray-400 group-hover:text-green-600/70">{item.sub}</span>
+                              </div>
+                              <div className="absolute right-3 opacity-0 group-hover:opacity-100 transform translate-x-2 group-hover:translate-x-0 transition-all duration-300 text-[#16A34A]">
+                                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" /></svg>
+                              </div>
+                            </Link>
+                          ))}
+
+                          <div className="my-2 border-t border-gray-100"></div>
+                          <div className="px-3 py-2 text-[10px] font-bold text-gray-400 uppercase tracking-widest">Shop</div>
+
+                          {[
+                            { to: "/favourites", icon: HiOutlineHeart, label: "Favorites", sub: "Saved items" },
+                            { to: "/items", icon: HiOutlineShoppingBag, label: "Shop Now", sub: "Browse store" }
+                          ].map((item, idx) => (
+                            <Link
+                              key={idx}
+                              to={item.to}
+                              onClick={() => setShowUserMenu(false)}
+                              className="flex items-center gap-4 px-3 py-2.5 rounded-xl hover:bg-green-50/80 transition-all duration-200 group relative overflow-hidden"
+                            >
+                              <div className="w-10 h-10 rounded-lg bg-gray-50 flex items-center justify-center text-gray-500 group-hover:bg-white group-hover:text-[#16A34A] group-hover:shadow-md transition-all duration-300 group-hover:scale-110">
+                                <item.icon className="text-xl" />
+                              </div>
+                              <div>
+                                <span className="font-semibold text-gray-700 block text-sm group-hover:text-gray-900">{item.label}</span>
+                                <span className="text-[11px] text-gray-400 group-hover:text-green-600/70">{item.sub}</span>
+                              </div>
+                              <div className="absolute right-3 opacity-0 group-hover:opacity-100 transform translate-x-2 group-hover:translate-x-0 transition-all duration-300 text-[#16A34A]">
+                                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" /></svg>
+                              </div>
+                            </Link>
+                          ))}
+
+                          <div className="my-2 border-t border-gray-100"></div>
+
+                          <button onClick={handleLogout} className="w-full flex items-center gap-4 px-3 py-2.5 rounded-xl hover:bg-red-50 transition-all duration-200 group text-left">
+                            <div className="w-10 h-10 rounded-lg bg-red-50 flex items-center justify-center text-red-500 group-hover:bg-red-500 group-hover:text-white group-hover:shadow-md transition-all duration-300 group-hover:scale-110">
+                              <HiOutlineLogout className="text-xl" />
+                            </div>
+                            <div>
+                              <span className="font-semibold text-red-600/80 block text-sm group-hover:text-red-700">Logout</span>
+                              <span className="text-[11px] text-red-400 group-hover:text-red-500/70">See you soon</span>
+                            </div>
+                          </button>
+
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
                 </div>
               </div>
             ) : (
-              <Link to="/login">
-                <button className="bg-gray-900 dark:bg-white text-white dark:text-black px-6 py-2.5 rounded-full text-sm font-semibold shadow-lg hover:shadow-xl hover:scale-105 transition-all duration-300">
+              <Link to="/login-selection">
+                <button className="bg-gray-900 text-white px-6 py-2.5 rounded-full text-sm font-semibold shadow-lg hover:shadow-xl hover:scale-105 transition-all duration-300">
                   Get Started
                 </button>
               </Link>
@@ -223,133 +295,15 @@ export default function Navbar() {
           </div>
 
           {/* --- MOBILE TOGGLE --- */}
-=======
-          <button
-            onClick={() => setTheme(theme === "light" ? "dark" : "light")}
-            className="
-              w-20 h-9 rounded-full relative
-              bg-white/40 border border-white/50 shadow-inner
-              flex items-center justify-between px-2
-            "
-          >
-            <div
-              className={`
-                absolute top-[3px] left-[3px] w-7 h-7
-                bg-white dark:bg-gray-300 rounded-full shadow-md 
-                transition-all duration-300
-                ${theme === "dark" ? "translate-x-10" : ""}
-              `}
-            ></div>
-
-            <BsSun className="text-yellow-600 z-10" />
-            <BsMoon className="text-gray-800 dark:text-black z-10" />
-          </button>
-
-          {user ? (
-            <div className="relative dropdown-container">
-              <button
-                onClick={() => setShowDropdown(!showDropdown)}
-                className="flex items-center gap-3 bg-white/40 dark:bg-white/10 backdrop-blur-xl px-4 py-2 rounded-full border border-white/40 shadow hover:shadow-xl transition"
-              >
-                <div className="text-sm leading-tight text-left">
-                  <p className="text-[#0b3d20] dark:text-emerald-200 font-semibold">Hello,</p>
-                  <p className="text-[#16A34A] dark:text-emerald-300 font-semibold -mt-0.5">
-                    {user.name}
-                  </p>
-                </div>
-
-                <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[#16A34A] to-[#22C55E] flex items-center justify-center text-white font-bold border-2 border-white">
-                  {user.name?.charAt(0).toUpperCase() || "U"}
-                </div>
-
-                <HiChevronDown className={`w-5 h-5 text-[#16A34A] transition-transform ${showDropdown ? "rotate-180" : ""}`} />
-              </button>
-
-              {showDropdown && (
-                <div className="absolute right-0 mt-2 w-64 bg-white dark:bg-gray-800 rounded-xl shadow-2xl border border-gray-200 dark:border-gray-700 overflow-hidden z-50">
-                  <div className="p-4 border-b border-gray-200 dark:border-gray-700">
-                    <p className="font-semibold text-gray-800 dark:text-white">{user.name}</p>
-                    <p className="text-sm text-gray-500 dark:text-gray-400">{user.email || "user@example.com"}</p>
-                  </div>
-                  
-                  <div className="py-2">
-                    <button
-                      onClick={handleDashboardClick}
-                      className="w-full flex items-center gap-3 px-4 py-3 text-left hover:bg-gray-50 dark:hover:bg-gray-700 transition text-gray-700 dark:text-gray-300"
-                    >
-                      <HiOutlineUser className="w-5 h-5 text-[#16A34A]" />
-                      <span>My Account</span>
-                    </button>
-                    
-                    <button
-                      onClick={handleDashboardClick}
-                      className="w-full flex items-center gap-3 px-4 py-3 text-left hover:bg-gray-50 dark:hover:bg-gray-700 transition text-gray-700 dark:text-gray-300"
-                    >
-                      <HiOutlineShoppingBag className="w-5 h-5 text-[#16A34A]" />
-                      <span>My Orders</span>
-                    </button>
-                    
-                    <button
-                      onClick={handleDashboardClick}
-                      className="w-full flex items-center gap-3 px-4 py-3 text-left hover:bg-gray-50 dark:hover:bg-gray-700 transition text-gray-700 dark:text-gray-300"
-                    >
-                      <HiOutlineLocationMarker className="w-5 h-5 text-[#16A34A]" />
-                      <span>Saved Addresses</span>
-                    </button>
-                    
-                    <div className="border-t border-gray-200 dark:border-gray-700 my-2"></div>
-                    
-                    <button
-                      onClick={handleLogout}
-                      className="w-full flex items-center gap-3 px-4 py-3 text-left hover:bg-red-50 dark:hover:bg-red-900/20 transition text-red-600 dark:text-red-400"
-                    >
-                      <HiOutlineLogout className="w-5 h-5" />
-                      <span>Logout</span>
-                    </button>
-                  </div>
-                </div>
-              )}
-            </div>
-          ) : (
-            <Link to="/login">
-              <button
-                className="
-                  px-6 py-2 rounded-full bg-[#16A34A] text-white font-semibold
-                  shadow-lg hover:bg-[#139c42] transition-all hover:shadow-xl
-                "
-              >
-                Get Started
-              </button>
-            </Link>
-          )}
-        </div>
-
-        <button onClick={() => setOpen(!open)} className="md:hidden text-3xl dark:text-white">
-          {open ? <HiX /> : <HiMenu />}
-        </button>
-      </nav>
-
-      {open && (
-        <div className="
-          md:hidden w-[92%] mt-2 px-6 py-5 rounded-2xl
-          bg-white/40 dark:bg-black/40 backdrop-blur-2xl 
-          border border-white/40 shadow-xl text-[#0b3d20] dark:text-white space-y-4
-        ">
-          {["Home", "Items", "Categories", "About", "Contact"].map((item) => (
-            <p key={item} className="hover:text-[#16A34A]">{item}</p>
-          ))}
-
->>>>>>> Stashed changes
           <button
             onClick={() => setOpen(!open)}
-            className="md:hidden p-2 text-gray-600 dark:text-gray-300 bg-gray-100 dark:bg-gray-800 rounded-full"
+            className="md:hidden p-2 text-gray-600 bg-gray-100 rounded-full"
           >
             {open ? <HiX className="w-6 h-6" /> : <HiMenuAlt3 className="w-6 h-6" />}
           </button>
         </nav>
       </div>
 
-<<<<<<< Updated upstream
       {/* --- MOBILE MENU OVERLAY --- */}
       <div
         className={`
@@ -362,7 +316,7 @@ export default function Navbar() {
       <div
         className={`
           md:hidden absolute top-24 left-4 right-4 z-50
-          bg-white dark:bg-gray-900 rounded-2xl shadow-2xl border border-gray-200 dark:border-gray-800
+          bg-white rounded-2xl shadow-2xl border border-gray-200
           p-5 flex flex-col gap-4 transform transition-all duration-300 origin-top
           ${open ? "scale-100 opacity-100 translate-y-0" : "scale-95 opacity-0 -translate-y-4 pointer-events-none"}
         `}
@@ -376,81 +330,82 @@ export default function Navbar() {
               onClick={() => setOpen(false)}
               className={`
                 px-4 py-3 rounded-xl font-medium flex items-center justify-between
-                ${
-                  location.pathname === link.path
-                    ? "bg-green-50 text-green-700 dark:bg-green-900/20 dark:text-green-400"
-                    : "text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800"
+                ${location.pathname === link.path
+                  ? "bg-green-50 text-green-700"
+                  : "text-gray-600 hover:bg-gray-50"
                 }
               `}
             >
               {link.name}
               {location.pathname === link.path && <div className="w-2 h-2 rounded-full bg-green-500"></div>}
-=======
-          {user ? (
-            <div className="space-y-2 mt-4">
-              <button
-                onClick={handleDashboardClick}
-                className="w-full bg-white/40 dark:bg-white/10 px-4 py-3 rounded-xl border border-white/40 text-left hover:bg-white/60 transition"
-              >
-                <p className="font-semibold text-gray-800 dark:text-white">Hello, {user.name}</p>
-                <p className="text-sm text-gray-600 dark:text-gray-400">View Dashboard</p>
-              </button>
-              <button
-                onClick={handleLogout}
-                className="w-full bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 px-4 py-3 rounded-xl border border-red-200 dark:border-red-800 hover:bg-red-100 transition"
-              >
-                Logout
-              </button>
-            </div>
-          ) : (
-            <Link to="/login">
-              <button className="w-full bg-[#16A34A] text-white py-3 rounded-xl mt-4">
-                Get Started
-              </button>
->>>>>>> Stashed changes
             </Link>
           ))}
         </div>
 
-        <div className="h-[1px] bg-gray-100 dark:bg-gray-800 w-full"></div>
+        <div className="h-[1px] bg-gray-100 w-full"></div>
 
         {/* Mobile Actions */}
         <div className="flex items-center justify-between px-2">
           <div className="flex items-center gap-3">
-             <button
+            <button
               onClick={toggleTheme}
-              className="w-10 h-10 flex items-center justify-center rounded-full bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-yellow-400"
+              className="w-10 h-10 flex items-center justify-center rounded-full bg-gray-100 text-gray-600"
             >
               {theme === "light" ? <BsMoonStarsFill /> : <BsSunFill />}
             </button>
-            <span className="text-sm font-medium text-gray-500 dark:text-gray-400">
-               {theme === "light" ? "Dark Mode" : "Light Mode"}
+            <span className="text-sm font-medium text-gray-500">
+              {theme === "light" ? "Dark Mode" : "Light Mode"}
             </span>
           </div>
         </div>
 
         {user ? (
-          <div className="bg-gray-50 dark:bg-gray-800 p-3 rounded-xl flex items-center justify-between">
+          <div className="bg-gray-50 p-3 rounded-xl flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <img
-                 src={user.avatar || "https://ui-avatars.com/api/?name=" + user.name}
-                 alt="User"
-                 className="w-10 h-10 rounded-full"
-              />
+              {user.avatar ? (
+                <img
+                  src={user.avatar}
+                  alt="User"
+                  className="w-10 h-10 rounded-full object-cover"
+                />
+              ) : (
+                <div className="w-10 h-10 rounded-full bg-green-600 text-white flex items-center justify-center font-bold">
+                  {getInitials(user.name)}
+                </div>
+              )}
               <div>
-                <p className="text-sm font-bold text-gray-900 dark:text-white">{user.name}</p>
+                <p className="text-sm font-bold text-gray-900">{user.name}</p>
                 <button onClick={handleLogout} className="text-xs text-red-500 font-medium">Log out</button>
               </div>
             </div>
           </div>
         ) : (
-          <Link to="/login" onClick={() => setOpen(false)}>
-            <button className="w-full bg-green-600 text-white py-3 rounded-xl font-bold shadow-lg shadow-green-200 dark:shadow-none">
+          <Link to="/login-selection" onClick={() => setOpen(false)}>
+            <button className="w-full bg-green-600 text-white py-3 rounded-xl font-bold shadow-lg shadow-green-200">
               Get Started
             </button>
           </Link>
         )}
       </div>
+
+      <style>{`
+        @keyframes spring-enter {
+          0% {
+            opacity: 0;
+            transform: scale(0.9) translateY(-20px);
+          }
+          60% {
+            transform: scale(1.02) translateY(5px);
+          }
+          100% {
+            opacity: 1;
+            transform: scale(1) translateY(0);
+          }
+        }
+        .animate-spring-enter {
+          animation: spring-enter 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+        }
+      `}</style>
     </div>
   );
 }
