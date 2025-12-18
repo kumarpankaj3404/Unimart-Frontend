@@ -11,6 +11,8 @@ import Orders from "./Pages/Orders";
 import Addresses from "./Pages/AdressModal";
 import Favourites from "./Pages/Favourites";
 import About from "./Pages/About";
+import NoActiveOrder from "./Pages/NoActiveOrder";
+import NotFound from "./Pages/NotFound";
 import "./App.css";
 
 export default function App() {
@@ -30,6 +32,8 @@ export default function App() {
         <Route path="/addresses" element={<Addresses />} />
         <Route path="/favourites" element={<Favourites />} />
         <Route path="/about" element={<About />} />
+          <Route path="/no-active-order" element={<NoActiveOrder />} />
+        <Route path="*" element={<NotFound />} />
       </Routes>
     </Router>
   );
