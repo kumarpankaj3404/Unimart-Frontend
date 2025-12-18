@@ -1,10 +1,13 @@
 import React, { useEffect, useState } from "react";
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 import { Link, useLocation } from "react-router-dom";
 import { HiMenuAlt3, HiX } from "react-icons/hi";
 import { BsSunFill, BsMoonStarsFill } from "react-icons/bs";
 import { FaUserCircle } from "react-icons/fa";
 =======
+=======
+>>>>>>> Stashed changes
 import { Link, useNavigate } from "react-router-dom";
 import { HiMenu, HiX, HiChevronDown } from "react-icons/hi";
 import { BsSun, BsMoon } from "react-icons/bs";
@@ -14,6 +17,9 @@ import {
   HiOutlineLocationMarker,
   HiOutlineLogout,
 } from "react-icons/hi";
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 
 export default function Navbar() {
@@ -21,10 +27,13 @@ export default function Navbar() {
   const [theme, setTheme] = useState("light");
   const [open, setOpen] = useState(false);
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
   const [user, setUser] = useState(null);
   const [scrolled, setScrolled] = useState(false);
   const location = useLocation();
 =======
+=======
+>>>>>>> Stashed changes
   const [showDropdown, setShowDropdown] = useState(false);
   const [user, setUser] = useState(null); 
 >>>>>>> Stashed changes
@@ -59,7 +68,10 @@ export default function Navbar() {
   }, [theme]);
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (showDropdown && !event.target.closest('.dropdown-container')) {
@@ -69,6 +81,10 @@ export default function Navbar() {
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, [showDropdown]);
+<<<<<<< Updated upstream
+=======
+
+>>>>>>> Stashed changes
 
 
 >>>>>>> Stashed changes
@@ -77,6 +93,14 @@ export default function Navbar() {
     setUser(null);
     setShowDropdown(false);
     navigate("/");
+<<<<<<< Updated upstream
+=======
+  };
+
+  const handleDashboardClick = () => {
+    navigate("/dashboard");
+    setShowDropdown(false);
+>>>>>>> Stashed changes
   };
 
   const handleDashboardClick = () => {
