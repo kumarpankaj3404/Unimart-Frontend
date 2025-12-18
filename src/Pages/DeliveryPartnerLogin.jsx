@@ -4,14 +4,15 @@ import {
   HiOutlineLockClosed,
   HiOutlineUser,
   HiArrowRight,
+  HiOutlineTruck,
   HiEye,
   HiEyeOff
 } from "react-icons/hi";
-import { FcGoogle } from "react-icons/fc";
+import { FaGoogle } from "react-icons/fa";
 import { Link } from "react-router-dom";
 import scooterBgVideo from "../assets/Scooterbg.mp4";
 
-export default function Auth() {
+export default function DeliveryPartnerLogin() {
   const [isSignup, setIsSignup] = useState(false);
   const [showPass, setShowPass] = useState(false);
   const [showCPass, setShowCPass] = useState(false);
@@ -22,6 +23,7 @@ export default function Auth() {
   const [email, setEmail] = useState("");
   const [pass, setPass] = useState("");
   const [cpass, setCPass] = useState("");
+  const [vehicleNumber, setVehicleNumber] = useState("");
 
   // Play video
   useEffect(() => {
@@ -40,27 +42,28 @@ export default function Auth() {
   const handleLogin = () => {
     if (!email || !pass) return;
     const user = {
-      name: email.split("@")[0] || "User",
-      type: "customer",
+      name: name || "Delivery Partner",
+      type: "delivery_partner",
       email
     };
     localStorage.setItem("user", JSON.stringify(user));
-    window.location.href = "/";
+    window.location.href = "/delivery-partner-dashboard";
   };
 
   const handleSignup = () => {
-    if (!name || !email || !pass || !cpass) return;
+    if (!name || !email || !pass || !cpass || !vehicleNumber) return;
     if (pass !== cpass) {
       alert("Passwords do not match");
       return;
     }
     const user = {
       name,
-      type: "customer",
-      email
+      type: "delivery_partner",
+      email,
+      vehicleNumber
     };
     localStorage.setItem("user", JSON.stringify(user));
-    window.location.href = "/";
+    window.location.href = "/delivery-partner-dashboard";
   };
 
   return (
@@ -89,7 +92,7 @@ export default function Auth() {
         <div className="absolute inset-0 bg-black/40 pointer-events-none" style={{ zIndex: 2 }}></div>
       </div>
 
-      {/* Decorative Background Elements */}
+      {/* Decorative Background Elements - Matched */}
       <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-[#16A34A]/20 blur-[100px] rounded-full z-10 animate-pulse-slow pointer-events-none"></div>
       <div className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-[#22C55E]/20 blur-[100px] rounded-full z-10 animate-pulse-slow-delayed pointer-events-none"></div>
 
@@ -110,7 +113,7 @@ export default function Auth() {
 
           {/* Spotlight Gradient - Slight boost for visibility */}
           <div
-            className="absolute inset-0 bg-gradient-to-r from-[#16A34A]/30 via-transparent to-transparent transition-opacity duration-300 pointer-events-none opacity-0 group-hover:opacity-100"
+            className="absolute inset-0 bg-lineaer-to-r from-[#16A34A]/30 via-transparent to-transparent transition-opacity duration-300 pointer-events-none opacity-0 group-hover:opacity-100"
             style={{ maskImage: 'radial-gradient(circle at center, black, transparent 70%)' }}
           ></div>
 
@@ -118,35 +121,57 @@ export default function Auth() {
             {/* Header */}
             <div className="text-center mb-10">
               <h2 className="text-3xl font-bold text-gray-900 group-hover:text-[#16A34A] transition-colors duration-300 mb-2 tracking-tight">
-                {isSignup ? "Create Account" : "Welcome Back"}
+                {isSignup ? "Partner Access" : "Partner Login"}
               </h2>
               <p className="text-gray-700 text-sm font-medium">
-                {isSignup ? "Join the fastest delivery network" : "Enter your details to continue"}
+                {isSignup ? "Register your vehicle & start earning" : "Welcome back to the fleet"}
               </p>
             </div>
 
             {/* Form */}
             <div className="space-y-5">
               {isSignup && (
-                <div className="group/input relative">
-                  <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                    <HiOutlineUser className="text-gray-600 text-lg group-focus-within/input:text-[#16A34A] transition-colors" />
+                <>
+                  <div className="group/input relative">
+                    <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                      <HiOutlineUser className="text-gray-600 text-lg group-focus-within/input:text-[#16A34A] transition-colors" />
+                    </div>
+                    <input
+                      type="text"
+                      className="
+                        block w-full pl-11 pr-4 py-4
+                        bg-white/50 text-gray-900 placeholder-gray-500
+                        rounded-xl border border-white/50
+                        focus:border-[#16A34A] focus:bg-white focus:ring-4 focus:ring-[#16A34A]/10 focus:outline-none
+                        transition-all duration-200
+                        text-sm font-medium
+                      "
+                      placeholder="Full Name"
+                      value={name}
+                      onChange={(e) => setName(e.target.value)}
+                    />
                   </div>
-                  <input
-                    type="text"
-                    className="
-                      block w-full pl-11 pr-4 py-4
-                      bg-white/50 text-gray-900 placeholder-gray-500
-                      rounded-xl border border-white/50
-                      focus:border-[#16A34A] focus:bg-white focus:ring-4 focus:ring-[#16A34A]/10 focus:outline-none
-                      transition-all duration-200
-                      text-sm font-medium
-                    "
-                    placeholder="Full Name"
-                    value={name}
-                    onChange={(e) => setName(e.target.value)}
-                  />
-                </div>
+
+                  <div className="group/input relative">
+                    <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                      <HiOutlineTruck className="text-gray-600 text-lg group-focus-within/input:text-[#16A34A] transition-colors" />
+                    </div>
+                    <input
+                      type="text"
+                      className="
+                        block w-full pl-11 pr-4 py-4
+                        bg-white/50 text-gray-900 placeholder-gray-500
+                        rounded-xl border border-white/50
+                        focus:border-[#16A34A] focus:bg-white focus:ring-4 focus:ring-[#16A34A]/10 focus:outline-none
+                        transition-all duration-200
+                        text-sm font-medium
+                      "
+                      placeholder="Vehicle Number"
+                      value={vehicleNumber}
+                      onChange={(e) => setVehicleNumber(e.target.value)}
+                    />
+                  </div>
+                </>
               )}
 
               <div className="group/input relative">
@@ -241,7 +266,7 @@ export default function Auth() {
                 {isSignup ? "Sign Up" : "Sign In"} <HiArrowRight className="group-hover/btn:translate-x-1 transition-transform" />
               </span>
               {/* Shine Effect - Boosted */}
-              <div className="absolute inset-0 -translate-x-full group-hover/btn:translate-x-full transition-transform duration-700 bg-gradient-to-r from-transparent via-white/40 to-transparent skew-x-12"></div>
+              <div className="absolute inset-0 -translate-x-full group-hover/btn:translate-x-full transition-transform duration-700 bg-linear-to-r from-transparent via-white/40 to-transparent skew-x-12"></div>
             </button>
 
             {/* Divider */}
@@ -255,7 +280,9 @@ export default function Auth() {
             </div>
 
             {/* Google Button */}
-            <button className="
+            <button 
+              onClick={() => alert("Google login coming soon")}
+              className="
               w-full py-3.5 
               bg-white/80 hover:bg-white 
               border border-white/60 rounded-xl 
@@ -264,7 +291,7 @@ export default function Auth() {
               shadow-sm hover:shadow-md
               group
             ">
-              <FcGoogle className="text-xl group-hover:scale-110 transition-transform" />
+              <FaGoogle className="text-xl group-hover:scale-110 transition-transform text-red-500" />
               <span className="text-gray-700 font-medium text-sm">Google Account</span>
             </button>
 
