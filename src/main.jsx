@@ -4,9 +4,16 @@ import './index.css'
 import "leaflet/dist/leaflet.css";
 import App from './App.jsx'
 import "./utils/fixLeafletIcon";
+import { Provider } from 'react-redux';
+import { store } from './redux/store.js';
+import { SocketProvider } from "./context/SocketContext";
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>
-    <App />
+    <Provider store={store}>
+      <SocketProvider>
+        <App />
+      </SocketProvider>
+    </Provider>
   </StrictMode>,
 )

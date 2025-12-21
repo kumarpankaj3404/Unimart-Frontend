@@ -8,12 +8,14 @@ import Dashboard from "./Pages/Dashboard";
 import Items from "./Pages/Items";
 import Profile from "./Pages/Profile";
 import Orders from "./Pages/Orders";
-import Addresses from "./Pages/AdressModal";
+import Addresses from "./Pages/SavedAddresses.jsx";
 import Favourites from "./Pages/Favourites";
 import About from "./Pages/About";
 import NoActiveOrder from "./Pages/NoActiveOrder";
 import NotFound from "./Pages/NotFound";
+import Tracking from "./Pages/Tracking";
 import "./App.css";
+
 
 export default function App() {
   return (
@@ -32,6 +34,7 @@ export default function App() {
         <Route path="/addresses" element={<Addresses />} />
         <Route path="/favourites" element={<Favourites />} />
         <Route path="/about" element={<About />} />
+        <Route path="/tracking" element={<Tracking />} />
           <Route path="/no-active-order" element={<NoActiveOrder />} />
         <Route path="*" element={<NotFound />} />
       </Routes>

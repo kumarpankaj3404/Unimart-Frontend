@@ -2,12 +2,14 @@ import { useEffect, useRef, useState } from "react";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 import Navbar from "./Navbar";
+import { useSocket } from "../context/SocketContext";
+import api from "../utils/api";
+import { HiOutlineRefresh } from "react-icons/hi";
 
 /* ================= LEAFLET ICON FIX ================= */
-// Fixes default icon paths in Webpack/Vite
 try {
   delete L.Icon.Default.prototype._getIconUrl;
-} catch {}
+} catch { }
 L.Icon.Default.mergeOptions({
   iconRetinaUrl:
     "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-icon-2x.png",
@@ -38,298 +40,294 @@ const createScooterIcon = () => {
   });
 };
 
-const restaurantIcon = new L.Icon({
-  iconUrl: "https://cdn-icons-png.flaticon.com/512/3448/3448609.png",
-  iconSize: [40, 40],
-  iconAnchor: [20, 40],
-});
-
-const destinationIcon = new L.Icon({
-  iconUrl: "https://cdn-icons-png.flaticon.com/512/684/684908.png",
-  iconSize: [40, 40],
-  iconAnchor: [20, 40],
-});
-
-/* ================= CONSTANTS & HELPERS ================= */
-const RESTAURANT = [28.6315, 77.2167];
-const DESTINATION = [28.6508, 77.2773];
-const SPEED_KMH = 40;
-
-const toRad = (v) => (v * Math.PI) / 180;
-const distanceKm = (a, b) => {
-  const R = 6371;
-  const dLat = toRad(b[0] - a[0]);
-  const dLon = toRad(b[1] - a[1]);
-  const x =
-    Math.sin(dLat / 2) ** 2 +
-    Math.cos(toRad(a[0])) *
-      Math.cos(toRad(b[0])) *
-      Math.sin(dLon / 2) ** 2;
-  return R * 2 * Math.atan2(Math.sqrt(x), Math.sqrt(1 - x));
-};
-const lerp = (a, b, t) => a + (b - a) * t;
-
-/* ================= ROUTING API ================= */
-async function fetchRoadRoute(from, to) {
-  try {
-    const url = `https://router.project-osrm.org/route/v1/driving/${from[1]},${from[0]};${to[1]},${to[0]}?overview=full&geometries=geojson`;
-    const res = await fetch(url);
-    if (!res.ok) throw new Error("Routing failed");
-    const data = await res.json();
-    return data.routes[0].geometry.coordinates.map(([lng, lat]) => [lat, lng]);
-  } catch (e) {
-    console.warn("OSRM Failed, using fallback line", e);
-    return [from, to]; // Fallback to straight line
-  }
-}
-
-/* ================= MAIN COMPONENT ================= */
 export default function Tracking() {
   const mapRef = useRef(null);
   const mapInstance = useRef(null);
-  const scooterRef = useRef(null);
-  const isUserInteracting = useRef(false);
+  const scooterMarkerRef = useRef(null);
 
-  const [route, setRoute] = useState([]);
-  const [eta, setEta] = useState(0);
-  const [step, setStep] = useState(2);
-  const [progress, setProgress] = useState(0);
+  const socket = useSocket();
+  const [orders, setOrders] = useState([]);
+  const [activeOrder, setActiveOrder] = useState(null);
+  const [driverLocation, setDriverLocation] = useState(null);
+  const [loading, setLoading] = useState(true);
 
-  // 1. Load Data
+  // 1. Fetch User Orders on Mount
   useEffect(() => {
-    let mounted = true;
-    fetchRoadRoute(RESTAURANT, DESTINATION).then((data) => {
-      if (mounted) setRoute(data);
-    });
-    return () => { mounted = false; };
+    fetchOrders();
   }, []);
 
-  // 2. Initialize Map
+  const fetchOrders = async () => {
+    try {
+      setLoading(true);
+      const res = await api.get("/orders/user-orders");
+      const userOrders = res.data.data || [];
+      // Sort: Newest first
+      userOrders.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+      setOrders(userOrders);
+
+      // Auto-select the first active order if none selected
+      if (!activeOrder) {
+        const firstActive = userOrders.find(o =>
+          ['processed', 'shipped'].includes(o.status)
+        );
+        if (firstActive) setActiveOrder(firstActive);
+      }
+    } catch (error) {
+      console.error("Failed to fetch orders:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // -----------------------------------------------------------------------
+  // SOCKET LOGIC PART 1: GLOBAL STATUS LISTENER
+  // Listens for updates to ANY order (e.g. status changes in the list)
+  // Backend sends these to the User ID room, which we are auto-joined to.
+  // -----------------------------------------------------------------------
   useEffect(() => {
-    if (!mapRef.current || !route.length) return;
-    if (mapInstance.current) return; // Prevent double init
+    if (!socket) return;
 
-    const map = L.map(mapRef.current, {
-      center: RESTAURANT,
-      zoom: 16,
-      zoomControl: false,
-    });
+    const handleStatusUpdate = (data) => {
+      console.log("🔔 Order Status Update:", data);
 
-    L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-      attribution: "&copy; OpenStreetMap",
-    }).addTo(map);
+      // Update the list immediately
+      setOrders(prevOrders => prevOrders.map(o => {
+        if (o._id === data.orderId) {
+          return { ...o, status: data.status };
+        }
+        return o;
+      }));
 
-    // Draw Path
-    L.polyline(route, {
-      color: "#3B82F6",
-      weight: 6,
-      opacity: 0.8,
-      lineCap: "round",
-    }).addTo(map);
+      // If the update is for our currently viewed order, update that too
+      if (activeOrder && activeOrder._id === data.orderId) {
+        setActiveOrder(prev => ({ ...prev, status: data.status }));
 
-    // Add Markers
-    L.marker(RESTAURANT, { icon: restaurantIcon }).addTo(map);
-    L.marker(DESTINATION, { icon: destinationIcon }).addTo(map);
+        // If delivered, clear the map location
+        if (data.status === 'delivered') {
+          setDriverLocation(null);
+          alert("Order Delivered!");
+        }
+      }
+    };
 
-    scooterRef.current = L.marker(route[0], {
-      icon: createScooterIcon(),
-      zIndexOffset: 1000,
-    }).addTo(map);
-
-    map.fitBounds(L.latLngBounds(route), { padding: [50, 50] });
-
-    // User Interaction Listeners (Stop auto-follow when user drags)
-    const startInteract = () => { isUserInteracting.current = true; };
-    const stopInteract = () => { setTimeout(() => { isUserInteracting.current = false; }, 4000); };
-    
-    map.on("dragstart", startInteract);
-    map.on("dragend", stopInteract);
-    map.on("zoomstart", startInteract);
-    map.on("zoomend", stopInteract);
-
-    mapInstance.current = map;
+    socket.on("order-status-updated", handleStatusUpdate);
 
     return () => {
-      map.remove();
-      mapInstance.current = null;
+      socket.off("order-status-updated", handleStatusUpdate);
     };
-  }, [route]);
+  }, [socket, activeOrder]);
 
-  // 3. Fix Map Resize Issue
+
+  // -----------------------------------------------------------------------
+  // SOCKET LOGIC PART 2: SPECIFIC ORDER TRACKING
+  // Joins the specific Order ID room to get GPS coordinates.
+  // Only runs when activeOrder changes.
+  // -----------------------------------------------------------------------
   useEffect(() => {
-    // When window resizes (mobile orientation change), force map to recalculate size
-    const handleResize = () => {
-      if (mapInstance.current) mapInstance.current.invalidateSize();
-    };
-    window.addEventListener("resize", handleResize);
-    return () => window.removeEventListener("resize", handleResize);
-  }, []);
+    // Reset location when switching orders
+    setDriverLocation(null);
 
-  // 4. Animation Loop
+    if (!socket || !activeOrder) return;
+
+    // Only join room if order is active (processed/shipped)
+    if (['processed', 'shipped'].includes(activeOrder.status)) {
+      console.log("🔵 Joining Tracking Room:", activeOrder._id);
+
+      // 1. Join Room
+      socket.emit("JOIN_ORDER", { orderId: activeOrder._id });
+
+      // 2. Listen for Location
+      const handleLocationUpdate = (data) => {
+        // Double check this update belongs to current view
+        // Backend emits { latitude, longitude }
+        const lat = data.lat || data.latitude;
+        const lng = data.lng || data.longitude;
+
+        if (lat && lng) {
+          console.log("📍 GPS:", lat, lng);
+          setDriverLocation([lat, lng]);
+        }
+      };
+
+      socket.on("DELIVERY_LOCATION_UPDATE", handleLocationUpdate);
+
+      return () => {
+        socket.off("DELIVERY_LOCATION_UPDATE", handleLocationUpdate);
+        // Optional: Leave room if your backend supports it, otherwise connection close handles it
+      };
+    }
+  }, [socket, activeOrder?._id, activeOrder?.status]); // Re-run only if ID or Status changes
+
+
+  // 3. Initialize Map (Leaflet Logic)
   useEffect(() => {
-    if (!mapInstance.current || !scooterRef.current || !route.length) return;
+    if (!mapRef.current || !activeOrder) return;
 
-    let seg = 0;
-    let start = null;
-    let raf;
-    const SEGMENT_TIME = 80;
+    if (!mapInstance.current) {
+      const map = L.map(mapRef.current, { zoomControl: false });
+      L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+        attribution: "&copy; OpenStreetMap",
+      }).addTo(map);
+      mapInstance.current = map;
+    }
 
-    const animate = (t) => {
-      if (!start) start = t;
-      const localProgress = Math.min((t - start) / SEGMENT_TIME, 1);
-      
-      const from = route[seg];
-      const to = route[seg + 1];
+    // Default center (India/Delhi generic or specific coords)
+    const defaultCenter = [28.6139, 77.2090];
+    mapInstance.current.setView(defaultCenter, 13);
 
-      if (!to) { 
-        setStep(4); 
-        setProgress(100); 
-        return; 
-      }
-
-      const pos = [lerp(from[0], to[0], localProgress), lerp(from[1], to[1], localProgress)];
-      scooterRef.current.setLatLng(pos);
-
-      // Smart Follow Logic
-      if (!isUserInteracting.current) {
-        mapInstance.current.panTo(pos, { animate: true, duration: 0.1, easeLinearity: 0.1 });
-      }
-
-      // Progress Calculation
-      const totalSegments = route.length - 1;
-      const currentPercent = ((seg + localProgress) / totalSegments) * 100;
-      setProgress(currentPercent);
-
-      // ETA
-      const d = distanceKm(pos, DESTINATION);
-      setEta(Math.ceil((d / SPEED_KMH) * 60));
-
-      // Steps Logic
-      if (currentPercent > 90) setStep(4);
-      else if (currentPercent > 10) setStep(3);
-
-      if (localProgress < 1) {
-        raf = requestAnimationFrame(animate);
-      } else {
-        seg++;
-        start = null;
-        if (seg < route.length - 1) raf = requestAnimationFrame(animate);
+    return () => {
+      if (mapInstance.current) {
+        mapInstance.current.remove();
+        mapInstance.current = null;
+        scooterMarkerRef.current = null;
       }
     };
+  }, [activeOrder?._id]); // Re-init map only on order switch
 
-    raf = requestAnimationFrame(animate);
-    return () => cancelAnimationFrame(raf);
-  }, [route]);
+  // 4. Update Driver Marker
+  useEffect(() => {
+    if (!mapInstance.current || !driverLocation) return;
+
+    const [lat, lng] = driverLocation;
+
+    if (!scooterMarkerRef.current) {
+      scooterMarkerRef.current = L.marker([lat, lng], {
+        icon: createScooterIcon(),
+        zIndexOffset: 1000,
+      }).addTo(mapInstance.current);
+      mapInstance.current.setView([lat, lng], 16);
+    } else {
+      scooterMarkerRef.current.setLatLng([lat, lng]);
+      mapInstance.current.panTo([lat, lng], { animate: true });
+    }
+  }, [driverLocation]);
+
+
+  /* --- UI HELPERS --- */
+  const getStatusColor = (status) => {
+    switch (status) {
+      case "pending": return "bg-yellow-100 text-yellow-700";
+      case "processed": return "bg-blue-100 text-blue-700";
+      case "shipped": return "bg-purple-100 text-purple-700";
+      case "delivered": return "bg-green-100 text-green-700";
+      case "cancelled": return "bg-red-100 text-red-700";
+      default: return "bg-gray-100 text-gray-700";
+    }
+  };
 
   return (
     <>
       <Navbar />
-      
-      {/* LAYOUT FIXES:
-        1. pt-20 lg:pt-24: Clears the fixed Navbar height.
-        2. h-screen: Forces full viewport height so map doesn't scroll away.
-      */}
       <div className="flex flex-col lg:flex-row h-screen w-full bg-gray-50 overflow-hidden font-sans pt-20 lg:pt-24">
-        
-        {/* --- MAP SECTION --- */}
-        {/* Mobile: h-[50vh] ensures map takes half screen. Desktop: flex-1 takes remaining width. */}
-        <div className="relative z-0 order-1 lg:order-1 h-[50vh] lg:h-auto flex-1 w-full">
-          <div ref={mapRef} className="w-full h-full" />
-          
-          {/* Mobile Floating ETA Badge */}
-          <div className="absolute top-4 left-4 z-[400] bg-white/90 backdrop-blur shadow-lg rounded-full px-4 py-2 flex items-center gap-2 lg:hidden">
-            <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
-            <span className="text-sm font-bold text-gray-800">Live • {eta} min</span>
+
+        {/* --- LEFT: ORDER LIST --- */}
+        <div className="order-2 lg:order-1 w-full lg:w-[400px] xl:w-[450px] bg-white shadow-xl z-20 flex flex-col h-[50vh] lg:h-full border-r border-gray-200">
+          <div className="p-6 border-b border-gray-100 flex justify-between items-center">
+            <h2 className="text-2xl font-bold text-gray-800">Your Orders</h2>
+            <button onClick={fetchOrders} className="p-2 hover:bg-gray-100 rounded-full transition-colors">
+              <HiOutlineRefresh className="text-gray-600" size={20} />
+            </button>
+          </div>
+
+          <div className="flex-1 overflow-y-auto p-4 space-y-4">
+            {loading ? (
+              <div className="text-center py-10 text-gray-400">Loading orders...</div>
+            ) : orders.length === 0 ? (
+              <div className="text-center py-10 text-gray-400">No recent orders found.</div>
+            ) : (
+              orders.map((order) => (
+                <div
+                  key={order._id}
+                  onClick={() => setActiveOrder(order)}
+                  className={`p-4 rounded-xl border cursor-pointer transition-all hover:shadow-md ${activeOrder?._id === order._id
+                    ? "border-[#16A34A] bg-green-50 ring-1 ring-[#16A34A]"
+                    : "border-gray-200 bg-white"
+                    }`}
+                >
+                  <div className="flex justify-between items-start mb-2">
+                    <span className="font-bold text-gray-800">#{order.orderNumber}</span>
+                    <span className={`text-xs px-2 py-1 rounded-full font-bold uppercase ${getStatusColor(order.status)}`}>
+                      {order.status}
+                    </span>
+                  </div>
+                  <div className="text-sm text-gray-600 mb-3">
+                    {/* Spec: Address is now an object 'address' */}
+                    {order.address?.fullAddress || order.shippingAddress?.fullAddress || "Address info"}
+                  </div>
+
+                  {/* MODERN UI: ITEM DETAILS (Only for non-delivered orders) */}
+                  {order.status !== 'delivered' && (
+                    <div className="mt-3 bg-white/50 rounded-lg border border-gray-100 p-2 text-xs space-y-2">
+                      {order.products?.slice(0, 3).map((item, idx) => (
+                        <div key={idx} className="flex justify-between items-center text-gray-600">
+                          <span className="truncate max-w-[150px] font-medium">• {item.quantity} x {item.product}</span>
+                          <span>₹{item.price * item.quantity}</span>
+                        </div>
+                      ))}
+                      {order.products?.length > 3 && (
+                        <p className="text-gray-400 pl-2 text-[10px] italic">+{order.products.length - 3} more items...</p>
+                      )}
+                    </div>
+                  )}
+
+                  <div className="flex justify-between items-center text-xs text-gray-500 font-medium mt-3 pt-3 border-t border-gray-200/50">
+                    <span className="text-gray-800 font-bold text-sm">₹{order.totalAmount}</span>
+                    {order.deliveredBy && (
+                      <span className="flex items-center gap-1 text-blue-600 bg-blue-50 px-2 py-0.5 rounded">
+                        Partner Assigned
+                      </span>
+                    )}
+                  </div>
+                </div>
+              ))
+            )}
           </div>
         </div>
 
-        {/* --- DETAILS SECTION --- */}
-        <div className="
-          shrink-0 
-          h-[50vh] lg:h-full 
-          lg:w-[450px] xl:w-[500px]
-          bg-white shadow-[0_-5px_20px_rgba(0,0,0,0.1)] lg:shadow-xl lg:border-l border-gray-200
-          relative z-10 
-          order-2 lg:order-2
-          flex flex-col
-        ">
-          {/* Scrollable Content */}
-          <div className="flex-1 overflow-y-auto p-6 lg:p-8 flex flex-col justify-between">
-            
-            <div>
-              {/* Status Header */}
-              <div className="mb-6 lg:mb-8">
-                <h2 className="text-2xl lg:text-3xl font-extrabold text-gray-900 tracking-tight">
-                  {step === 4 ? "Arriving Now" : step === 3 ? "On the way" : "Picked Up"}
-                </h2>
-                <p className="text-sm lg:text-base text-gray-500 mb-4 mt-1 font-medium">
-                  Reaching destination in <span className="text-blue-600 font-bold">{eta} mins</span>
+        {/* --- RIGHT: MAP AREA --- */}
+        <div className="order-1 lg:order-2 flex-1 relative h-[50vh] lg:h-full bg-gray-200">
+          {activeOrder ? (
+            ['shipped', 'processed'].includes(activeOrder.status) ? (
+              <>
+                <div ref={mapRef} className="w-full h-full z-10" />
+                {!driverLocation && (
+                  <div className="absolute inset-0 flex items-center justify-center bg-black/50 z-20 text-white backdrop-blur-sm">
+                    <div className="text-center">
+                      <div className="animate-spin text-4xl mb-2">⏳</div>
+                      <p className="font-bold">Waiting for delivery partner location...</p>
+                    </div>
+                  </div>
+                )}
+                {/* Driver Info Floating Card */}
+                {activeOrder.deliveredBy && (
+                  <div className="absolute bottom-6 left-6 right-6 lg:left-auto lg:right-6 lg:w-80 bg-white p-4 rounded-xl shadow-lg z-[400] border border-gray-100">
+                    <h3 className="text-sm font-bold text-gray-500 uppercase mb-2">Delivery Partner</h3>
+                    <div className="flex items-center gap-3">
+                      <div className="w-12 h-12 bg-gray-200 rounded-full flex items-center justify-center text-xl">🛵</div>
+                      <div>
+                        <p className="font-bold text-gray-800">{activeOrder.deliveredBy.name || "Partner"}</p>
+                        <p className="text-xs text-green-600 font-bold">● {driverLocation ? "Live on Map" : "Connecting..."}</p>
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </>
+            ) : (
+              <div className="w-full h-full flex flex-col items-center justify-center text-gray-500 p-8 text-center">
+                <div className="text-6xl mb-4">📍</div>
+                <h3 className="text-xl font-bold text-gray-700">Order #{activeOrder.orderNumber}</h3>
+                <p className="max-w-xs mx-auto mt-2">
+                  Tracking is only available when the order is <b>Processed</b> or <b>Shipped</b>.
+                  <br />
+                  Current Status: <span className="font-bold uppercase">{activeOrder.status}</span>
                 </p>
-                
-                {/* Progress Bar */}
-                <div className="w-full h-2 lg:h-3 bg-gray-100 rounded-full overflow-hidden">
-                  <div
-                    className="h-full bg-blue-600 transition-all duration-300 ease-linear rounded-full"
-                    style={{ width: `${progress}%` }} 
-                  />
-                </div>
               </div>
-
-              {/* Driver Card */}
-              <div className="bg-gray-50 rounded-2xl p-4 lg:p-5 flex items-center gap-4 border border-gray-100 mb-6 lg:mb-8 shadow-sm">
-                <div className="relative">
-                  <img 
-                    src="https://images.unsplash.com/photo-1633332755192-727a05c4013d?w=100&auto=format&fit=crop&q=60" 
-                    alt="Driver" 
-                    className="w-12 h-12 lg:w-14 lg:h-14 rounded-full object-cover border-2 border-white shadow-sm"
-                  />
-                  <div className="absolute -bottom-1 -right-1 bg-green-500 border-2 border-white w-4 h-4 rounded-full"></div>
-                </div>
-                <div className="flex-1">
-                  <h3 className="font-bold text-gray-900 text-lg">Rahul Kumar</h3>
-                  <div className="text-xs lg:text-sm text-gray-500 font-medium">Blue Scooter • ★ 4.8</div>
-                </div>
-                <button className="w-10 h-10 lg:w-12 lg:h-12 bg-white rounded-full border border-gray-200 flex items-center justify-center text-blue-600 shadow-sm hover:bg-blue-50 transition-colors">
-                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
-                  </svg>
-                </button>
-              </div>
-
-              {/* Order Details */}
-              <div>
-                <h3 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-4">Your Order</h3>
-                <div className="space-y-4">
-                  <div className="flex justify-between items-center">
-                    <div className="flex gap-3 items-center">
-                        <span className="text-xs font-bold text-gray-600 bg-gray-100 px-2 py-1 rounded">1x</span>
-                        <span className="text-sm lg:text-base font-medium text-gray-900">Veg Maharaja Burger</span>
-                    </div>
-                    <span className="text-sm lg:text-base font-semibold text-gray-900">₹149</span>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <div className="flex gap-3 items-center">
-                        <span className="text-xs font-bold text-gray-600 bg-gray-100 px-2 py-1 rounded">1x</span>
-                        <span className="text-sm lg:text-base font-medium text-gray-900">Peri Peri Fries</span>
-                    </div>
-                    <span className="text-sm lg:text-base font-semibold text-gray-900">₹80</span>
-                  </div>
-                </div>
-              </div>
+            )
+          ) : (
+            <div className="w-full h-full flex items-center justify-center text-gray-400">
+              <p>Select an order to view details</p>
             </div>
-            
-            {/* Footer Bill */}
-            <div className="mt-6 pt-6 border-t border-dashed border-gray-200">
-              <div className="flex justify-between items-end mb-2">
-                  <span className="text-sm text-gray-500 font-medium">Total Amount</span>
-                  <span className="text-xl lg:text-2xl font-extrabold text-gray-900">₹269.00</span>
-              </div>
-              <div className="w-full bg-green-50 text-green-700 text-xs font-bold px-3 py-2 rounded-lg text-center border border-green-100 uppercase tracking-wide">
-                  Paid via UPI
-              </div>
-            </div>
-
-          </div>
+          )}
         </div>
       </div>
     </>

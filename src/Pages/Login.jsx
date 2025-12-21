@@ -5,11 +5,17 @@ import {
   HiOutlineUser,
   HiArrowRight,
   HiEye,
-  HiEyeOff
+  HiEyeOff,
+  HiOutlinePhone // Added Phone Icon
 } from "react-icons/hi";
 import { FcGoogle } from "react-icons/fc";
-import { Link } from "react-router-dom";
-import scooterBgVideo from "../assets/Scooterbg.mp4";
+import { Link, useNavigate } from "react-router-dom";
+import scooterBgVideo from "../assets/Scooterbg.mp4"; // Make sure path is correct
+import api from "../utils/api"; // Your Axios Instance
+
+// REDUX IMPORTS
+import { useDispatch, useSelector } from "react-redux";
+import { loginStart, loginSuccess, loginFailure } from "../redux/authSlice";
 
 export default function Auth() {
   const [isSignup, setIsSignup] = useState(false);
@@ -18,16 +24,21 @@ export default function Auth() {
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
   const videoRef = useRef(null);
 
+  // Form State
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
+  const [number, setNumber] = useState(""); // Phone number
   const [pass, setPass] = useState("");
   const [cpass, setCPass] = useState("");
+  const [errorMsg, setErrorMsg] = useState("");
+
+  const navigate = useNavigate();
+  const dispatch = useDispatch();
+  const { loading } = useSelector((state) => state.auth);
 
   // Play video
   useEffect(() => {
-    if (videoRef.current) {
-      videoRef.current.play().catch(console.error);
-    }
+    if (videoRef.current) videoRef.current.play().catch(console.error);
   }, []);
 
   const handleMouseMove = (e) => {
@@ -37,30 +48,83 @@ export default function Auth() {
     });
   };
 
-  const handleLogin = () => {
-    if (!email || !pass) return;
-    const user = {
-      name: email.split("@")[0] || "User",
-      type: "customer",
-      email
-    };
-    localStorage.setItem("user", JSON.stringify(user));
-    window.location.href = "/";
-  };
-
-  const handleSignup = () => {
-    if (!name || !email || !pass || !cpass) return;
-    if (pass !== cpass) {
-      alert("Passwords do not match");
+  // --- API HANDLER: LOGIN ---
+  const handleLogin = async () => {
+    if (!email || !pass) {
+      setErrorMsg("Please fill in all fields");
       return;
     }
-    const user = {
-      name,
-      type: "customer",
-      email
-    };
-    localStorage.setItem("user", JSON.stringify(user));
-    window.location.href = "/";
+
+    try {
+      dispatch(loginStart());
+
+      const response = await api.post("/users/login", {
+        email,
+        password: pass
+      });
+
+      console.log("Login Response:", response);
+
+      const userData = response.data.data;
+      if (!userData) throw new Error("No user data received");
+
+      // Extract token from response root or user object
+      const token = response.data.accessToken || response.data.token || userData.accessToken;
+
+      // Merge token into user payload for Redux/LocalStorage
+      const userPayload = { ...userData, accessToken: token };
+
+      // Persist critical token for Socket
+      localStorage.setItem("user", JSON.stringify(userPayload));
+      if (token) localStorage.setItem("accessToken", token);
+
+      dispatch(loginSuccess(userPayload));
+      navigate("/"); // Go to home page
+
+    } catch (err) {
+      console.error(err);
+      const message = err.response?.data?.message || "Login failed";
+      setErrorMsg(message);
+      dispatch(loginFailure(message));
+    }
+  };
+
+  // --- API HANDLER: SIGNUP ---
+  const handleSignup = async () => {
+    if (!name || !email || !number || !pass || !cpass) {
+      setErrorMsg("All fields are required");
+      return;
+    }
+    if (pass !== cpass) {
+      setErrorMsg("Passwords do not match");
+      return;
+    }
+
+    try {
+      dispatch(loginStart());
+
+      const response = await api.post("/users/register", {
+        username: name,
+        email,
+        password: pass,
+        number,
+        role: "user"
+      });
+
+      console.log("Signup Response:", response);
+
+      // --- CRITICAL FIX ---
+      const userData = response.data.data;
+
+      dispatch(loginSuccess(userData));
+      navigate("/");
+
+    } catch (err) {
+      console.error(err);
+      const message = err.response?.data?.message || "Signup failed";
+      setErrorMsg(message);
+      dispatch(loginFailure(message));
+    }
   };
 
   return (
@@ -68,7 +132,7 @@ export default function Auth() {
       className="min-h-screen w-full flex items-center justify-center relative overflow-hidden bg-gray-900"
       onMouseMove={handleMouseMove}
     >
-      {/* Background Video - Exact Match */}
+      {/* Background Video */}
       <div className="absolute inset-0 w-full h-full z-0 bg-gray-900">
         <video
           ref={videoRef}
@@ -89,11 +153,11 @@ export default function Auth() {
         <div className="absolute inset-0 bg-black/40 pointer-events-none" style={{ zIndex: 2 }}></div>
       </div>
 
-      {/* Decorative Background Elements */}
+      {/* Decorative Blobs */}
       <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-[#16A34A]/20 blur-[100px] rounded-full z-10 animate-pulse-slow pointer-events-none"></div>
       <div className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-[#22C55E]/20 blur-[100px] rounded-full z-10 animate-pulse-slow-delayed pointer-events-none"></div>
 
-      {/* Main Card Container - Translucent Glass Style */}
+      {/* Main Card */}
       <div
         className="relative z-20 w-full max-w-[420px] px-4 perspective-1000"
         style={{
@@ -108,15 +172,9 @@ export default function Auth() {
           transition-all duration-300
         ">
 
-          {/* Spotlight Gradient - Slight boost for visibility */}
-          <div
-            className="absolute inset-0 bg-gradient-to-r from-[#16A34A]/30 via-transparent to-transparent transition-opacity duration-300 pointer-events-none opacity-0 group-hover:opacity-100"
-            style={{ maskImage: 'radial-gradient(circle at center, black, transparent 70%)' }}
-          ></div>
-
           <div className="p-8 sm:p-10 relative z-10">
             {/* Header */}
-            <div className="text-center mb-10">
+            <div className="text-center mb-8">
               <h2 className="text-3xl font-bold text-gray-900 group-hover:text-[#16A34A] transition-colors duration-300 mb-2 tracking-tight">
                 {isSignup ? "Create Account" : "Welcome Back"}
               </h2>
@@ -125,8 +183,15 @@ export default function Auth() {
               </p>
             </div>
 
+            {/* Error Message Display */}
+            {errorMsg && (
+              <div className="mb-4 p-3 bg-red-100 border border-red-200 text-red-700 rounded-xl text-sm text-center font-medium">
+                {errorMsg}
+              </div>
+            )}
+
             {/* Form */}
-            <div className="space-y-5">
+            <div className="space-y-4">
               {isSignup && (
                 <div className="group/input relative">
                   <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
@@ -134,14 +199,7 @@ export default function Auth() {
                   </div>
                   <input
                     type="text"
-                    className="
-                      block w-full pl-11 pr-4 py-4
-                      bg-white/50 text-gray-900 placeholder-gray-500
-                      rounded-xl border border-white/50
-                      focus:border-[#16A34A] focus:bg-white focus:ring-4 focus:ring-[#16A34A]/10 focus:outline-none
-                      transition-all duration-200
-                      text-sm font-medium
-                    "
+                    className="block w-full pl-11 pr-4 py-3.5 bg-white/50 text-gray-900 placeholder-gray-500 rounded-xl border border-white/50 focus:border-[#16A34A] focus:bg-white focus:ring-4 focus:ring-[#16A34A]/10 focus:outline-none transition-all duration-200 text-sm font-medium"
                     placeholder="Full Name"
                     value={name}
                     onChange={(e) => setName(e.target.value)}
@@ -155,19 +213,28 @@ export default function Auth() {
                 </div>
                 <input
                   type="email"
-                  className="
-                    block w-full pl-11 pr-4 py-4
-                    bg-white/50 text-gray-900 placeholder-gray-500
-                    rounded-xl border border-white/50
-                    focus:border-[#16A34A] focus:bg-white focus:ring-4 focus:ring-[#16A34A]/10 focus:outline-none
-                    transition-all duration-200
-                    text-sm font-medium
-                  "
+                  className="block w-full pl-11 pr-4 py-3.5 bg-white/50 text-gray-900 placeholder-gray-500 rounded-xl border border-white/50 focus:border-[#16A34A] focus:bg-white focus:ring-4 focus:ring-[#16A34A]/10 focus:outline-none transition-all duration-200 text-sm font-medium"
                   placeholder="Email Address"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                 />
               </div>
+
+              {/* --- PHONE INPUT (Only for Signup) --- */}
+              {isSignup && (
+                <div className="group/input relative">
+                  <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                    <HiOutlinePhone className="text-gray-600 text-lg group-focus-within/input:text-[#16A34A] transition-colors" />
+                  </div>
+                  <input
+                    type="number" // Use number for mobile
+                    className="block w-full pl-11 pr-4 py-3.5 bg-white/50 text-gray-900 placeholder-gray-500 rounded-xl border border-white/50 focus:border-[#16A34A] focus:bg-white focus:ring-4 focus:ring-[#16A34A]/10 focus:outline-none transition-all duration-200 text-sm font-medium"
+                    placeholder="Phone Number"
+                    value={number}
+                    onChange={(e) => setNumber(e.target.value)}
+                  />
+                </div>
+              )}
 
               <div className="group/input relative">
                 <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
@@ -175,14 +242,7 @@ export default function Auth() {
                 </div>
                 <input
                   type={showPass ? "text" : "password"}
-                  className="
-                    block w-full pl-11 pr-12 py-4
-                    bg-white/50 text-gray-900 placeholder-gray-500
-                    rounded-xl border border-white/50
-                    focus:border-[#16A34A] focus:bg-white focus:ring-4 focus:ring-[#16A34A]/10 focus:outline-none
-                    transition-all duration-200
-                    text-sm font-medium
-                  "
+                  className="block w-full pl-11 pr-12 py-3.5 bg-white/50 text-gray-900 placeholder-gray-500 rounded-xl border border-white/50 focus:border-[#16A34A] focus:bg-white focus:ring-4 focus:ring-[#16A34A]/10 focus:outline-none transition-all duration-200 text-sm font-medium"
                   placeholder="Password"
                   value={pass}
                   onChange={(e) => setPass(e.target.value)}
@@ -202,14 +262,7 @@ export default function Auth() {
                   </div>
                   <input
                     type={showCPass ? "text" : "password"}
-                    className="
-                      block w-full pl-11 pr-12 py-4
-                      bg-white/50 text-gray-900 placeholder-gray-500
-                      rounded-xl border border-white/50
-                      focus:border-[#16A34A] focus:bg-white focus:ring-4 focus:ring-[#16A34A]/10 focus:outline-none
-                      transition-all duration-200
-                      text-sm font-medium
-                    "
+                    className="block w-full pl-11 pr-12 py-3.5 bg-white/50 text-gray-900 placeholder-gray-500 rounded-xl border border-white/50 focus:border-[#16A34A] focus:bg-white focus:ring-4 focus:ring-[#16A34A]/10 focus:outline-none transition-all duration-200 text-sm font-medium"
                     placeholder="Confirm Password"
                     value={cpass}
                     onChange={(e) => setCPass(e.target.value)}
@@ -227,7 +280,8 @@ export default function Auth() {
             {/* Main Action Button */}
             <button
               onClick={isSignup ? handleSignup : handleLogin}
-              className="
+              disabled={loading}
+              className={`
                 group/btn relative w-full mt-8 py-4 
                 bg-[#16A34A] hover:bg-[#15803d]
                 rounded-xl shadow-lg shadow-green-600/20
@@ -235,37 +289,13 @@ export default function Auth() {
                 transition-all duration-300 
                 transform hover:-translate-y-0.5 hover:shadow-green-600/30
                 overflow-hidden
-              "
+                ${loading ? "opacity-70 cursor-not-allowed" : ""}
+              `}
             >
               <span className="relative z-10 flex items-center justify-center gap-2">
-                {isSignup ? "Sign Up" : "Sign In"} <HiArrowRight className="group-hover/btn:translate-x-1 transition-transform" />
+                {loading ? "Processing..." : (isSignup ? "Sign Up" : "Sign In")}
+                {!loading && <HiArrowRight className="group-hover/btn:translate-x-1 transition-transform" />}
               </span>
-              {/* Shine Effect - Boosted */}
-              <div className="absolute inset-0 -translate-x-full group-hover/btn:translate-x-full transition-transform duration-700 bg-gradient-to-r from-transparent via-white/40 to-transparent skew-x-12"></div>
-            </button>
-
-            {/* Divider */}
-            <div className="relative my-8">
-              <div className="absolute inset-0 flex items-center">
-                <div className="w-full border-t border-gray-300/50"></div>
-              </div>
-              <div className="relative flex justify-center text-xs uppercase tracking-widest">
-                <span className="bg-white/40 px-4 text-gray-600 font-semibold backdrop-blur-sm rounded-full">Or continue with</span>
-              </div>
-            </div>
-
-            {/* Google Button */}
-            <button className="
-              w-full py-3.5 
-              bg-white/80 hover:bg-white 
-              border border-white/60 rounded-xl 
-              flex items-center justify-center gap-3 
-              transition-all duration-200
-              shadow-sm hover:shadow-md
-              group
-            ">
-              <FcGoogle className="text-xl group-hover:scale-110 transition-transform" />
-              <span className="text-gray-700 font-medium text-sm">Google Account</span>
             </button>
 
             {/* Footer */}
@@ -273,23 +303,15 @@ export default function Auth() {
               <p className="text-gray-200 text-sm">
                 {isSignup ? "Already have an account?" : "Don't have an account?"}{" "}
                 <button
-                  onClick={() => setIsSignup(!isSignup)}
+                  onClick={() => { setIsSignup(!isSignup); setErrorMsg(""); }}
                   className="text-[#16A34A] hover:text-[#15803d] font-bold transition-colors"
                 >
                   {isSignup ? "Log In" : "Sign Up"}
                 </button>
               </p>
-
-              <Link to="/login-selection" className="inline-block text-xs text-gray-400 hover:text-gray-200 transition-colors">
-                Back to Selection
-              </Link>
             </div>
 
           </div>
-
-          {/* Shine Effect (Outer) - Boosted for Visibility */}
-          <div className="absolute inset-0 -translate-x-full skew-x-12 bg-linear-to-r from-transparent via-white/80 to-transparent transition-transform duration-1000 group-hover:translate-x-full pointer-events-none"></div>
-
         </div>
       </div>
     </div>

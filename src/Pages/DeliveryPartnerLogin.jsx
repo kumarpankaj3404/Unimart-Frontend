@@ -1,31 +1,48 @@
 import React, { useState, useRef, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import { useDispatch, useSelector } from "react-redux";
 import {
   HiOutlineMail,
   HiOutlineLockClosed,
   HiOutlineUser,
   HiArrowRight,
   HiEye,
-  HiEyeOff
+  HiEyeOff,
+  HiOutlinePhone
 } from "react-icons/hi";
 import { FcGoogle } from "react-icons/fc";
+import { CgSpinner } from "react-icons/cg";
 import scooterBgVideo from "../assets/Scooterbg.mp4";
+
+// Redux & API
+import { loginStart, loginSuccess, loginFailure } from "../redux/authSlice";
+import api from "../utils/api";
 
 export default function DeliveryPartnerLogin() {
   const navigate = useNavigate();
+  const dispatch = useDispatch();
+  const { loading, error } = useSelector((state) => state.auth);
+
   const [isSignup, setIsSignup] = useState(false);
   const [showPass, setShowPass] = useState(false);
   const [showCPass, setShowCPass] = useState(false);
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
   const videoRef = useRef(null);
 
-  const [name, setName] = useState("");
-  const [email, setEmail] = useState("");
-  const [pass, setPass] = useState("");
-  const [cpass, setCPass] = useState("");
+  const [formData, setFormData] = useState({
+    name: "",
+    email: "",
+    number: "",
+    password: "",
+    cpass: ""
+  });
+
+  const handleChange = (e) => {
+    setFormData({ ...formData, [e.target.name]: e.target.value });
+  };
 
   useEffect(() => {
-    videoRef.current?.play().catch(() => {});
+    videoRef.current?.play().catch(() => { });
   }, []);
 
   const handleMouseMove = (e) => {
@@ -35,32 +52,94 @@ export default function DeliveryPartnerLogin() {
     });
   };
 
-  const handleLogin = () => {
-    if (!email || !pass) return;
-    localStorage.setItem(
-      "user",
-      JSON.stringify({
-        name: email.split("@")[0],
-        type: "delivery_partner",
-        email
-      })
-    );
-    navigate("/delivery-partner-dashboard");
+  // --- LOGIN LOGIC ---
+  const handleLogin = async () => {
+    if (!formData.email || !formData.password) {
+      return alert("Please fill in all fields");
+    }
+
+    try {
+      dispatch(loginStart());
+
+      console.log("Attempting Login..."); // Debug
+      const res = await api.post("/users/login", {
+        email: formData.email,
+        password: formData.password
+      });
+
+      console.log("Login Response:", res.data); // Debug
+
+      // 1. Get User Data
+      const userData = res.data.data || res.data.user;
+
+      // 2. Role Check
+      if (userData.role !== "delivery") {
+        dispatch(loginFailure("Access denied. Not a delivery account."));
+        alert("This account is not registered as a Delivery Partner.");
+        return;
+      }
+
+      // 3. Extract Token & Prepare Payload
+      const token = res.data.accessToken || res.data.token || (userData && userData.accessToken);
+      const userPayload = { ...userData, accessToken: token };
+
+      // 4. Save to LocalStorage (Redux persistence backup)
+      localStorage.setItem("user", JSON.stringify(userPayload));
+      if (token) localStorage.setItem("accessToken", token);
+
+      // 5. Update Redux
+      dispatch(loginSuccess(userPayload));
+
+      // 6. Navigate
+      console.log("Navigating to Dashboard...");
+      navigate("/delivery-partner-dashboard");
+
+    } catch (err) {
+      console.error("Login Error:", err);
+      const errorMessage = err.response?.data?.message || "Login failed";
+      dispatch(loginFailure(errorMessage));
+      alert(errorMessage);
+    }
   };
 
-  const handleSignup = () => {
-    if (!name || !email || !pass || !cpass) return;
-    if (pass !== cpass) return alert("Passwords do not match");
+  // --- SIGNUP LOGIC ---
+  const handleSignup = async () => {
+    const { name, email, number, password, cpass } = formData;
 
-    localStorage.setItem(
-      "user",
-      JSON.stringify({
-        name,
-        type: "delivery_partner",
-        email
-      })
-    );
-    navigate("/delivery-partner-dashboard");
+    if (!name || !email || !number || !password || !cpass) {
+      return alert("All fields are required");
+    }
+    if (password !== cpass) {
+      return alert("Passwords do not match");
+    }
+
+    try {
+      dispatch(loginStart());
+
+      const res = await api.post("/users/register", {
+        username: name,
+        email,
+        password,
+        number,
+        role: "delivery"
+      });
+
+      const userData = res.data.data || res.data.user;
+      const token = res.data.accessToken || res.data.token || (userData && userData.accessToken);
+      const userPayload = { ...userData, accessToken: token };
+
+      localStorage.setItem("user", JSON.stringify(userPayload));
+      if (token) localStorage.setItem("accessToken", token);
+
+      dispatch(loginSuccess(userPayload));
+      navigate("/delivery-partner-dashboard");
+
+    } catch (err) {
+      console.error("Signup Error:", err);
+      const errorMessage = err.response?.data?.message || "Signup failed";
+      dispatch(loginFailure(errorMessage));
+      alert(errorMessage);
+    }
   };
 
   return (
@@ -68,7 +147,6 @@ export default function DeliveryPartnerLogin() {
       className="min-h-screen w-full flex items-center justify-center relative overflow-hidden bg-gray-900"
       onMouseMove={handleMouseMove}
     >
-      {/* Background Video */}
       <div className="absolute inset-0 w-full h-full z-0 bg-gray-900">
         <video
           ref={videoRef}
@@ -89,145 +167,115 @@ export default function DeliveryPartnerLogin() {
         <div className="absolute inset-0 bg-black/40 pointer-events-none"></div>
       </div>
 
-      {/* Decorative Blobs */}
-      <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-[#16A34A]/20 blur-[100px] rounded-full z-10 animate-pulse-slow"></div>
-      <div className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-[#22C55E]/20 blur-[100px] rounded-full z-10 animate-pulse-slow-delayed"></div>
+      <div className="relative z-20 w-full max-w-[450px] px-4">
+        <div className="group relative overflow-hidden rounded-3xl bg-white/60 backdrop-blur-xl shadow-lg border border-white/40 p-8">
 
-      {/* Card */}
-      <div className="relative z-20 w-full max-w-[420px] px-4 perspective-1000">
-        <div className="group relative overflow-hidden rounded-3xl bg-white/60 backdrop-blur-xl shadow-lg border border-white/40 hover:border-[#16A34A] hover:shadow-[0_20px_40px_rgba(22,163,74,0.25)] hover:-translate-y-1 transition-all duration-300">
+          <div className="text-center mb-6">
+            <h2 className="text-3xl font-bold text-gray-900 mb-1">
+              {isSignup ? "Join the Fleet" : "Partner Login"}
+            </h2>
+          </div>
 
-          {/* Spotlight */}
-          <div
-            className="absolute inset-0 bg-gradient-to-r from-[#16A34A]/30 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity"
-            style={{ maskImage: "radial-gradient(circle at center, black, transparent 70%)" }}
-          />
-
-          <div className="p-8 sm:p-10 relative z-10">
-            {/* Header */}
-            <div className="text-center mb-10">
-              <h2 className="text-3xl font-bold text-gray-900 group-hover:text-[#16A34A] transition-colors duration-300 mb-2 tracking-tight">
-                {isSignup ? "Partner Signup" : "Partner Login"}
-              </h2>
-              <p className="text-gray-700 text-sm font-medium">
-                {isSignup ? "Join the delivery network" : "Welcome back to the fleet"}
-              </p>
-            </div>
-
-            {/* Form */}
-            <div className="space-y-5">
-              {isSignup && (
+          <div className="space-y-4">
+            {isSignup && (
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div className="relative">
-                  <HiOutlineUser className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-600" />
+                  <HiOutlineUser className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500" />
                   <input
-                    type="text"
-                    placeholder="Full Name"
-                    value={name}
-                    onChange={(e) => setName(e.target.value)}
-                    className="w-full pl-11 pr-4 py-4 bg-white/50 text-gray-900 placeholder-gray-500 rounded-xl outline-none focus:ring-4 focus:ring-[#16A34A]/10"
+                    name="name"
+                    placeholder="Name"
+                    value={formData.name}
+                    onChange={handleChange}
+                    className="w-full pl-9 pr-3 py-3 rounded-xl outline-none bg-white/50 text-sm"
                   />
                 </div>
-              )}
-
-              <div className="relative">
-                <HiOutlineMail className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-600" />
-                <input
-                  type="email"
-                  placeholder="Email Address"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  className="w-full pl-11 pr-4 py-4 bg-white/50 text-gray-900 placeholder-gray-500 rounded-xl outline-none focus:ring-4 focus:ring-[#16A34A]/10"
-                />
+                <div className="relative">
+                  <HiOutlinePhone className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500" />
+                  <input
+                    name="number"
+                    placeholder="Phone"
+                    value={formData.number}
+                    onChange={handleChange}
+                    className="w-full pl-9 pr-3 py-3 rounded-xl outline-none bg-white/50 text-sm"
+                  />
+                </div>
               </div>
+            )}
 
+            <div className="relative">
+              <HiOutlineMail className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500" />
+              <input
+                name="email"
+                placeholder="Email Address"
+                value={formData.email}
+                onChange={handleChange}
+                className="w-full pl-9 pr-3 py-3 rounded-xl outline-none bg-white/50 text-sm"
+              />
+            </div>
+
+            <div className={isSignup ? "grid grid-cols-1 sm:grid-cols-2 gap-3" : ""}>
               <div className="relative">
-                <HiOutlineLockClosed className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-600" />
+                <HiOutlineLockClosed className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500" />
                 <input
                   type={showPass ? "text" : "password"}
+                  name="password"
                   placeholder="Password"
-                  value={pass}
-                  onChange={(e) => setPass(e.target.value)}
-                  className="w-full pl-11 pr-12 py-4 bg-white/50 text-gray-900 placeholder-gray-500 rounded-xl outline-none focus:ring-4 focus:ring-[#16A34A]/10"
+                  value={formData.password}
+                  onChange={handleChange}
+                  className="w-full pl-9 pr-10 py-3 rounded-xl outline-none bg-white/50 text-sm"
                 />
-                <button
-                  type="button"
-                  onClick={() => setShowPass(!showPass)}
-                  className="absolute inset-y-0 right-0 pr-4 flex items-center text-gray-600 hover:text-gray-800"
-                >
+                <button type="button" onClick={() => setShowPass(!showPass)} className="absolute right-3 top-3 text-gray-500">
                   {showPass ? <HiEyeOff /> : <HiEye />}
                 </button>
               </div>
 
               {isSignup && (
                 <div className="relative">
-                  <HiOutlineLockClosed className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-600" />
+                  <HiOutlineLockClosed className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500" />
                   <input
                     type={showCPass ? "text" : "password"}
-                    placeholder="Confirm Password"
-                    value={cpass}
-                    onChange={(e) => setCPass(e.target.value)}
-                    className="w-full pl-11 pr-12 py-4 bg-white/50 text-gray-900 placeholder-gray-500 rounded-xl outline-none focus:ring-4 focus:ring-[#16A34A]/10"
+                    name="cpass"
+                    placeholder="Confirm"
+                    value={formData.cpass}
+                    onChange={handleChange}
+                    className="w-full pl-9 pr-10 py-3 rounded-xl outline-none bg-white/50 text-sm"
                   />
-                  <button
-                    type="button"
-                    onClick={() => setShowCPass(!showCPass)}
-                    className="absolute inset-y-0 right-0 pr-4 flex items-center text-gray-600 hover:text-gray-800"
-                  >
-                    {showCPass ? <HiEyeOff /> : <HiEye />}
-                  </button>
                 </div>
               )}
             </div>
 
-            {/* Button */}
+            {/* ERROR DISPLAY */}
+            {error && (
+              <div className="text-red-600 text-xs text-center font-bold bg-red-100 py-2 rounded-lg">
+                {error}
+              </div>
+            )}
+
+            {/* ACTION BUTTON */}
             <button
+              type="button" // Important: type="button" prevents form reload
               onClick={isSignup ? handleSignup : handleLogin}
-              className="group/btn relative w-full mt-8 py-4 bg-[#16A34A] hover:bg-[#15803d] rounded-xl shadow-lg shadow-green-600/20 text-white font-bold tracking-wide transition-all duration-300 overflow-hidden"
+              disabled={loading}
+              className="w-full py-3.5 bg-[#16A34A] hover:bg-[#15803d] rounded-xl text-white font-bold shadow-lg transition-all flex items-center justify-center gap-2"
             >
-              <span className="relative z-10 flex items-center justify-center gap-2">
-                {isSignup ? "Sign Up" : "Sign In"} <HiArrowRight />
-              </span>
-              <div className="absolute inset-0 -translate-x-full group-hover/btn:translate-x-full transition-transform duration-700 bg-gradient-to-r from-transparent via-white/40 to-transparent skew-x-12"></div>
+              {loading ? <CgSpinner className="animate-spin text-xl" /> : (
+                <>
+                  {isSignup ? "Sign Up" : "Sign In"} <HiArrowRight />
+                </>
+              )}
             </button>
-
-            {/* Divider */}
-            <div className="relative my-8">
-              <div className="absolute inset-0 flex items-center">
-                <div className="w-full border-t border-gray-300/50"></div>
-              </div>
-              <div className="relative flex justify-center text-xs uppercase tracking-widest">
-                <span className="bg-white/40 px-4 text-gray-600 font-semibold backdrop-blur-sm rounded-full">
-                  Or continue with
-                </span>
-              </div>
-            </div>
-
-            {/* Google */}
-            <button className="w-full py-3.5 bg-white/80 hover:bg-white border border-white/60 rounded-xl flex items-center justify-center gap-3 shadow-sm hover:shadow-md transition-all">
-              <FcGoogle className="text-xl" />
-              <span className="text-gray-700 font-medium text-sm">Google Account</span>
-            </button>
-
-            {/* Footer */}
-            <div className="mt-8 text-center space-y-4">
-              <p className="text-gray-200 text-sm">
-                {isSignup ? "Already have an account?" : "Don't have an account?"}{" "}
-                <button
-                  onClick={() => setIsSignup(!isSignup)}
-                  className="text-[#16A34A] hover:text-[#15803d] font-bold transition-colors"
-                >
-                  {isSignup ? "Log In" : "Sign Up"}
-                </button>
-              </p>
-
-              <Link to="/login-selection" className="inline-block text-xs text-gray-400 hover:text-gray-200 transition-colors">
-                Back to Selection
-              </Link>
-            </div>
           </div>
 
-          {/* Outer shine */}
-          <div className="absolute inset-0 -translate-x-full skew-x-12 bg-gradient-to-r from-transparent via-white/80 to-transparent transition-transform duration-1000 group-hover:translate-x-full pointer-events-none"></div>
+          <div className="mt-6 text-center">
+            <button
+              type="button"
+              onClick={() => { setIsSignup(!isSignup); dispatch(loginFailure(null)); }}
+              className="text-gray-500 hover:text-[#16A34A] text-xs font-semibold"
+            >
+              {isSignup ? "Already have an account? Log In" : "New here? Create an account"}
+            </button>
+          </div>
+
         </div>
       </div>
     </div>
