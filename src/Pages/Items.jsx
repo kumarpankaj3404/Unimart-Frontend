@@ -48,8 +48,8 @@ export default function Items() {
   const { loading, orderSuccess, error } = useSelector((state) => state.order);
   const { currentUser } = useSelector((state) => state.auth);
 
-  const [addressSelectionOpen, setAddressSelectionOpen] = useState(false); 
-  const [addressOpen, setAddressOpen] = useState(false); 
+  const [addressSelectionOpen, setAddressSelectionOpen] = useState(false);
+  const [addressOpen, setAddressOpen] = useState(false);
   const [selectedAddress, setSelectedAddress] = useState(null);
   const [summaryOpen, setSummaryOpen] = useState(false);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
@@ -107,7 +107,7 @@ export default function Items() {
 
 
   const handleCheckoutClick = () => {
-    setCartOpen(false); 
+    setCartOpen(false);
     if (currentUser?.address && currentUser.address.length > 0) {
       setAddressSelectionOpen(true);
     } else {
@@ -120,18 +120,26 @@ export default function Items() {
       navigate("/login");
       return;
     }
+    const finalAddressObj = {
+      fullAddress: selectedAddress?.address || selectedAddress?.fullAddress || (typeof selectedAddress === 'string' ? selectedAddress : "No Address Provided"),
+      lat: selectedAddress?.lat || 0,
+      lng: selectedAddress?.lng || 0,
+      name: selectedAddress?.name || currentUser?.name,
+      number: selectedAddress?.number || currentUser?.number || selectedAddress?.phone
+    };
+
     const orderData = {
       products: cart.map(item => ({
         product: item.name,
-        thumbnail: item.img, 
+        thumbnail: item.img,
         quantity: item.qty,
         price: item.price
       })),
       totalAmount: finalTotal,
-      payment: "cod", 
-      address: selectedAddress?.address || selectedAddress?.fullAddress || selectedAddress || "No Address Provided",
-      lat: selectedAddress?.lat || 0,
-      lng: selectedAddress?.lng || 0
+      payment: "cod",
+      address: finalAddressObj.fullAddress, // Sending String as required by backend
+      lat: finalAddressObj.lat,
+      lng: finalAddressObj.lng
     };
     dispatch(placeOrder(orderData));
   };
@@ -278,7 +286,7 @@ export default function Items() {
         }}
         onAddNew={() => {
           setAddressSelectionOpen(false);
-          setAddressOpen(true); 
+          setAddressOpen(true);
         }}
       />
 
@@ -297,7 +305,7 @@ export default function Items() {
       <OrderSummaryModal
         open={summaryOpen}
         address={selectedAddress}
-        user={currentUser}  
+        user={currentUser}
         loading={loading}
         error={error}
         onBack={() => {

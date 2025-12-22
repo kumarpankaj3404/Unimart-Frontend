@@ -133,6 +133,7 @@ export default function DeliveryPartnerDashboard() {
 
   const openGoogleMaps = () => {
 
+    // Robust check for address object or string
     const addressData = activeOrder?.address || activeOrder?.drivingAddress;
 
     if (!addressData) {
@@ -284,7 +285,7 @@ export default function DeliveryPartnerDashboard() {
             </div>
           </div>
         ) : (
-         
+
           <div className="bg-white rounded-[2.5rem] p-12 text-center shadow-xl border border-slate-100 max-w-sm mx-auto mt-10 relative overflow-hidden">
             <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-emerald-400 to-teal-500"></div>
             <div className={`w-28 h-28 mx-auto rounded-full flex items-center justify-center mb-6 transition-all duration-500 ${isOnline ? "bg-emerald-50 text-emerald-500 shadow-emerald-100 shadow-xl scale-110" : "bg-slate-50 text-slate-300 shadow-inner"}`}>

@@ -21,7 +21,7 @@ export default function AddressModal({ open, onClose, onConfirm, initialData }) 
       setAddress(prev => ({
         ...prev,
         name: initialData.name || "",
-        phone: initialData.number || "", 
+        phone: initialData.number || "",
       }));
     }
   }, [open, initialData]);
@@ -75,8 +75,9 @@ export default function AddressModal({ open, onClose, onConfirm, initialData }) 
     const payload = {
       name: address.name,
       number: address.phone,
-      address: fullAddress, 
-      lat: address.lat,     
+      fullAddress: fullAddress,
+      address: fullAddress, // Kept for legacy compatibility
+      lat: address.lat,
       lng: address.lng
     };
 

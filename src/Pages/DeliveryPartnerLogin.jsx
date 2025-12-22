@@ -69,8 +69,11 @@ export default function DeliveryPartnerLogin() {
 
       console.log("Login Response:", res.data); // Debug
 
-      // 1. Get User Data
-      const userData = res.data.data || res.data.user;
+      // 1. Get User Data - Robust extraction
+      const payload = res.data.data || res.data;
+      const userData = payload.user || payload;
+
+      console.log("Extracted User Data:", userData); // Debug
 
       // 2. Role Check
       if (userData.role !== "delivery") {
@@ -80,7 +83,7 @@ export default function DeliveryPartnerLogin() {
       }
 
       // 3. Extract Token & Prepare Payload
-      const token = res.data.accessToken || res.data.token || (userData && userData.accessToken);
+      const token = res.data.accessToken || payload.accessToken || payload.token || (userData && userData.accessToken);
       const userPayload = { ...userData, accessToken: token };
 
       // 4. Save to LocalStorage (Redux persistence backup)
