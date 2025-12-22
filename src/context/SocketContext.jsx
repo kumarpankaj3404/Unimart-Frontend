@@ -37,7 +37,7 @@ export const SocketProvider = ({ children }) => {
 
         console.log("🔌 Initializing Socket Connection...");
 
-        const newSocket = io("http://localhost:8001", {
+        const newSocket = io("https://unimart-backend-1fo0.onrender.com", {
             auth: {
                 token: token // ⚠️ MUST PASS TOKEN HERE per Manual
             },
