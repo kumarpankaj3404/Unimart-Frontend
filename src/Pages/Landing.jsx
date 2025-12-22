@@ -266,12 +266,32 @@ export default function Landing() {
 
           <div>
             <h5 className="text-xl font-semibold mb-4">Quick Links</h5>
-            <ul className="space-y-3 text-white/80">
-              <li className="hover:text-[#22C55E] cursor-pointer">Shop</li>
-              <li className="hover:text-[#22C55E] cursor-pointer">Categories</li>
-              <li className="hover:text-[#22C55E] cursor-pointer">Track Order</li>
-              <li className="hover:text-[#22C55E] cursor-pointer">Support</li>
-            </ul>
+           <ul className="space-y-3 text-white/80">
+  <li>
+    <Link to="/login" className="hover:text-[#22C55E] transition">
+      Shop
+    </Link>
+  </li>
+
+  <li>
+    <Link to="/items" className="hover:text-[#22C55E] transition">
+      Categories
+    </Link>
+  </li>
+
+  <li>
+    <Link to="/tracking" className="hover:text-[#22C55E] transition">
+      Track Order
+    </Link>
+  </li>
+
+  {/* <li>
+    <Link to="/support" className="hover:text-[#22C55E] transition">
+      Support
+    </Link>
+  </li> */}
+</ul>
+
           </div>
 
           <div>
