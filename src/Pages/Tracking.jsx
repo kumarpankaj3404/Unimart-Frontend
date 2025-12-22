@@ -6,7 +6,6 @@ import { useSocket } from "../context/SocketContext";
 import api from "../utils/api";
 import { HiOutlineRefresh } from "react-icons/hi";
 
-/* ================= LEAFLET ICON FIX ================= */
 try {
   delete L.Icon.Default.prototype._getIconUrl;
 } catch { }
@@ -19,7 +18,6 @@ L.Icon.Default.mergeOptions({
     "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-shadow.png",
 });
 
-/* ================= ICONS ================= */
 const createScooterIcon = () => {
   return L.divIcon({
     className: "bg-transparent",
@@ -51,7 +49,6 @@ export default function Tracking() {
   const [driverLocation, setDriverLocation] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  // 1. Fetch User Orders on Mount
   useEffect(() => {
     fetchOrders();
   }, []);
@@ -61,11 +58,10 @@ export default function Tracking() {
       setLoading(true);
       const res = await api.get("/orders/user-orders");
       const userOrders = res.data.data || [];
-      // Sort: Newest first
+
       userOrders.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
       setOrders(userOrders);
 
-      // Auto-select the first active order if none selected
       if (!activeOrder) {
         const firstActive = userOrders.find(o =>
           ['processed', 'shipped'].includes(o.status)
@@ -79,18 +75,12 @@ export default function Tracking() {
     }
   };
 
-  // -----------------------------------------------------------------------
-  // SOCKET LOGIC PART 1: GLOBAL STATUS LISTENER
-  // Listens for updates to ANY order (e.g. status changes in the list)
-  // Backend sends these to the User ID room, which we are auto-joined to.
-  // -----------------------------------------------------------------------
   useEffect(() => {
     if (!socket) return;
 
     const handleStatusUpdate = (data) => {
       console.log("🔔 Order Status Update:", data);
 
-      // Update the list immediately
       setOrders(prevOrders => prevOrders.map(o => {
         if (o._id === data.orderId) {
           return { ...o, status: data.status };
@@ -98,11 +88,9 @@ export default function Tracking() {
         return o;
       }));
 
-      // If the update is for our currently viewed order, update that too
       if (activeOrder && activeOrder._id === data.orderId) {
         setActiveOrder(prev => ({ ...prev, status: data.status }));
 
-        // If delivered, clear the map location
         if (data.status === 'delivered') {
           setDriverLocation(null);
           alert("Order Delivered!");
@@ -118,28 +106,17 @@ export default function Tracking() {
   }, [socket, activeOrder]);
 
 
-  // -----------------------------------------------------------------------
-  // SOCKET LOGIC PART 2: SPECIFIC ORDER TRACKING
-  // Joins the specific Order ID room to get GPS coordinates.
-  // Only runs when activeOrder changes.
-  // -----------------------------------------------------------------------
   useEffect(() => {
-    // Reset location when switching orders
     setDriverLocation(null);
 
     if (!socket || !activeOrder) return;
 
-    // Only join room if order is active (processed/shipped)
     if (['processed', 'shipped'].includes(activeOrder.status)) {
       console.log("🔵 Joining Tracking Room:", activeOrder._id);
 
-      // 1. Join Room
       socket.emit("JOIN_ORDER", { orderId: activeOrder._id });
 
-      // 2. Listen for Location
       const handleLocationUpdate = (data) => {
-        // Double check this update belongs to current view
-        // Backend emits { latitude, longitude }
         const lat = data.lat || data.latitude;
         const lng = data.lng || data.longitude;
 
@@ -153,13 +130,10 @@ export default function Tracking() {
 
       return () => {
         socket.off("DELIVERY_LOCATION_UPDATE", handleLocationUpdate);
-        // Optional: Leave room if your backend supports it, otherwise connection close handles it
       };
     }
-  }, [socket, activeOrder?._id, activeOrder?.status]); // Re-run only if ID or Status changes
+  }, [socket, activeOrder?._id, activeOrder?.status]); 
 
-
-  // 3. Initialize Map (Leaflet Logic)
   useEffect(() => {
     if (!mapRef.current || !activeOrder) return;
 
@@ -171,7 +145,6 @@ export default function Tracking() {
       mapInstance.current = map;
     }
 
-    // Default center (India/Delhi generic or specific coords)
     const defaultCenter = [28.6139, 77.2090];
     mapInstance.current.setView(defaultCenter, 13);
 
@@ -182,9 +155,8 @@ export default function Tracking() {
         scooterMarkerRef.current = null;
       }
     };
-  }, [activeOrder?._id]); // Re-init map only on order switch
+  }, [activeOrder?._id]); 
 
-  // 4. Update Driver Marker
   useEffect(() => {
     if (!mapInstance.current || !driverLocation) return;
 
@@ -203,7 +175,6 @@ export default function Tracking() {
   }, [driverLocation]);
 
 
-  /* --- UI HELPERS --- */
   const getStatusColor = (status) => {
     switch (status) {
       case "pending": return "bg-yellow-100 text-yellow-700";
@@ -218,14 +189,12 @@ export default function Tracking() {
   return (
     <>
       <Navbar />
-      <div className="flex flex-col lg:flex-row h-screen w-full bg-gray-50 overflow-hidden font-sans pt-20 lg:pt-24">
-
-        {/* --- LEFT: ORDER LIST --- */}
-        <div className="order-2 lg:order-1 w-full lg:w-[400px] xl:w-[450px] bg-white shadow-xl z-20 flex flex-col h-[50vh] lg:h-full border-r border-gray-200">
-          <div className="p-6 border-b border-gray-100 flex justify-between items-center">
-            <h2 className="text-2xl font-bold text-gray-800">Your Orders</h2>
-            <button onClick={fetchOrders} className="p-2 hover:bg-gray-100 rounded-full transition-colors">
-              <HiOutlineRefresh className="text-gray-600" size={20} />
+      <div className="flex flex-col lg:flex-row h-screen w-full bg-gray-50 dark:bg-slate-950 overflow-hidden font-sans pt-20 lg:pt-24 transition-colors duration-300">
+        <div className="order-2 lg:order-1 w-full lg:w-[400px] xl:w-[450px] bg-white dark:bg-slate-900 shadow-xl z-20 flex flex-col h-[50vh] lg:h-full border-r border-gray-200 dark:border-slate-800">
+          <div className="p-6 border-b border-gray-100 dark:border-slate-800 flex justify-between items-center">
+            <h2 className="text-2xl font-bold text-gray-800 dark:text-white">Your Orders</h2>
+            <button onClick={fetchOrders} className="p-2 hover:bg-gray-100 dark:hover:bg-slate-800 rounded-full transition-colors">
+              <HiOutlineRefresh className="text-gray-600 dark:text-gray-400" size={20} />
             </button>
           </div>
 
@@ -240,26 +209,23 @@ export default function Tracking() {
                   key={order._id}
                   onClick={() => setActiveOrder(order)}
                   className={`p-4 rounded-xl border cursor-pointer transition-all hover:shadow-md ${activeOrder?._id === order._id
-                    ? "border-[#16A34A] bg-green-50 ring-1 ring-[#16A34A]"
-                    : "border-gray-200 bg-white"
+                    ? "border-[#16A34A] bg-green-50 dark:bg-green-900/20 ring-1 ring-[#16A34A]"
+                    : "border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-800"
                     }`}
                 >
                   <div className="flex justify-between items-start mb-2">
-                    <span className="font-bold text-gray-800">#{order.orderNumber}</span>
+                    <span className="font-bold text-gray-800 dark:text-white">#{order.orderNumber}</span>
                     <span className={`text-xs px-2 py-1 rounded-full font-bold uppercase ${getStatusColor(order.status)}`}>
                       {order.status}
                     </span>
                   </div>
-                  <div className="text-sm text-gray-600 mb-3">
-                    {/* Spec: Address is now an object 'address' */}
+                  <div className="text-sm text-gray-600 dark:text-gray-300 mb-3">
                     {order.address?.fullAddress || order.shippingAddress?.fullAddress || "Address info"}
                   </div>
-
-                  {/* MODERN UI: ITEM DETAILS (Only for non-delivered orders) */}
                   {order.status !== 'delivered' && (
-                    <div className="mt-3 bg-white/50 rounded-lg border border-gray-100 p-2 text-xs space-y-2">
+                    <div className="mt-3 bg-white/50 dark:bg-slate-700/50 rounded-lg border border-gray-100 dark:border-slate-700 p-2 text-xs space-y-2">
                       {order.products?.slice(0, 3).map((item, idx) => (
-                        <div key={idx} className="flex justify-between items-center text-gray-600">
+                        <div key={idx} className="flex justify-between items-center text-gray-600 dark:text-gray-300">
                           <span className="truncate max-w-[150px] font-medium">• {item.quantity} x {item.product}</span>
                           <span>₹{item.price * item.quantity}</span>
                         </div>
@@ -270,8 +236,8 @@ export default function Tracking() {
                     </div>
                   )}
 
-                  <div className="flex justify-between items-center text-xs text-gray-500 font-medium mt-3 pt-3 border-t border-gray-200/50">
-                    <span className="text-gray-800 font-bold text-sm">₹{order.totalAmount}</span>
+                  <div className="flex justify-between items-center text-xs text-gray-500 dark:text-gray-400 font-medium mt-3 pt-3 border-t border-gray-200/50 dark:border-slate-700/50">
+                    <span className="text-gray-800 dark:text-white font-bold text-sm">₹{order.totalAmount}</span>
                     {order.deliveredBy && (
                       <span className="flex items-center gap-1 text-blue-600 bg-blue-50 px-2 py-0.5 rounded">
                         Partner Assigned
@@ -284,8 +250,7 @@ export default function Tracking() {
           </div>
         </div>
 
-        {/* --- RIGHT: MAP AREA --- */}
-        <div className="order-1 lg:order-2 flex-1 relative h-[50vh] lg:h-full bg-gray-200">
+        <div className="order-1 lg:order-2 flex-1 relative h-[50vh] lg:h-full bg-gray-200 dark:bg-slate-800">
           {activeOrder ? (
             ['shipped', 'processed'].includes(activeOrder.status) ? (
               <>
@@ -298,14 +263,13 @@ export default function Tracking() {
                     </div>
                   </div>
                 )}
-                {/* Driver Info Floating Card */}
                 {activeOrder.deliveredBy && (
-                  <div className="absolute bottom-6 left-6 right-6 lg:left-auto lg:right-6 lg:w-80 bg-white p-4 rounded-xl shadow-lg z-[400] border border-gray-100">
-                    <h3 className="text-sm font-bold text-gray-500 uppercase mb-2">Delivery Partner</h3>
+                  <div className="absolute bottom-6 left-6 right-6 lg:left-auto lg:right-6 lg:w-80 bg-white dark:bg-slate-900 p-4 rounded-xl shadow-lg z-[400] border border-gray-100 dark:border-slate-700">
+                    <h3 className="text-sm font-bold text-gray-500 dark:text-gray-400 uppercase mb-2">Delivery Partner</h3>
                     <div className="flex items-center gap-3">
-                      <div className="w-12 h-12 bg-gray-200 rounded-full flex items-center justify-center text-xl">🛵</div>
+                      <div className="w-12 h-12 bg-gray-200 dark:bg-slate-800 rounded-full flex items-center justify-center text-xl">🛵</div>
                       <div>
-                        <p className="font-bold text-gray-800">{activeOrder.deliveredBy.name || "Partner"}</p>
+                        <p className="font-bold text-gray-800 dark:text-white">{activeOrder.deliveredBy.name || "Partner"}</p>
                         <p className="text-xs text-green-600 font-bold">● {driverLocation ? "Live on Map" : "Connecting..."}</p>
                       </div>
                     </div>
@@ -313,9 +277,9 @@ export default function Tracking() {
                 )}
               </>
             ) : (
-              <div className="w-full h-full flex flex-col items-center justify-center text-gray-500 p-8 text-center">
+              <div className="w-full h-full flex flex-col items-center justify-center text-gray-500 dark:text-gray-400 p-8 text-center">
                 <div className="text-6xl mb-4">📍</div>
-                <h3 className="text-xl font-bold text-gray-700">Order #{activeOrder.orderNumber}</h3>
+                <h3 className="text-xl font-bold text-gray-700 dark:text-gray-200">Order #{activeOrder.orderNumber}</h3>
                 <p className="max-w-xs mx-auto mt-2">
                   Tracking is only available when the order is <b>Processed</b> or <b>Shipped</b>.
                   <br />

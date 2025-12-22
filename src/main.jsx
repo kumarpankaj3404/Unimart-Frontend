@@ -9,6 +9,7 @@ import { store } from './redux/store.js';
 import { SocketProvider } from "./context/SocketContext";
 
 createRoot(document.getElementById('root')).render(
+  
   <StrictMode>
     <Provider store={store}>
       <SocketProvider>

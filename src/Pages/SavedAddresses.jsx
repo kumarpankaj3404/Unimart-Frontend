@@ -1,8 +1,8 @@
 import React, { useState } from "react";
 import { HiOutlineLocationMarker, HiPlus, HiTrash } from "react-icons/hi";
 import { useDispatch, useSelector } from "react-redux";
-import Navbar from "./Navbar"; // Check this path
-import AddressModal from "./AdressModal"; // Check this path (ensure filename matches exactly!)
+import Navbar from "./Navbar"; 
+import AddressModal from "./AdressModal"; 
 import api from "../utils/api";
 import { loginSuccess } from "../redux/authSlice";
 
@@ -10,21 +10,15 @@ export default function SavedAddresses() {
   const [showModal, setShowModal] = useState(false);
   const [loading, setLoading] = useState(false);
   
-  // Get user from Redux
   const { currentUser } = useSelector((state) => state.auth);
   const dispatch = useDispatch();
 
-  // Handle adding a new address
   const handleAddAddress = async (addressData) => {
     setLoading(true);
     try {
-      // 1. Call API (The backend will PUSH this new address to the array)
       const response = await api.patch("/users/update-profile", addressData);
-      
-      // 2. Get the updated user object from response
-      const updatedUser = response.data.data;
 
-      // 3. Update Redux Store instantly
+      const updatedUser = response.data.data;
       dispatch(loginSuccess(updatedUser));
       
       alert("Address added successfully!");
@@ -36,11 +30,9 @@ export default function SavedAddresses() {
     }
   };
 
-  // Helper to ensure address is always an array (handles legacy data)
   const getAddressList = () => {
     if (!currentUser?.address) return [];
     if (Array.isArray(currentUser.address)) return currentUser.address;
-    // Fallback if old data was a single string
     return [{ fullAddress: currentUser.address, label: "Home", _id: "legacy" }];
   };
 
@@ -65,7 +57,6 @@ export default function SavedAddresses() {
           </button>
         </div>
 
-        {/* Address Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {addressList.length > 0 ? (
             addressList.map((addr, index) => (
@@ -74,12 +65,10 @@ export default function SavedAddresses() {
                 className="bg-white p-6 rounded-2xl shadow-sm border border-[#22C55E]/10 hover:shadow-md transition relative group"
               >
                 <div className="flex items-start gap-4">
-                  {/* Icon */}
                   <div className="p-3 bg-[#F0FDF4] rounded-full text-[#16A34A] shrink-0">
                     <HiOutlineLocationMarker size={24} />
                   </div>
 
-                  {/* Content */}
                   <div className="flex-1">
                     <div className="flex justify-between items-start">
                        <h3 className="font-bold text-[#14532D] text-lg">
@@ -104,7 +93,6 @@ export default function SavedAddresses() {
                   </div>
                 </div>
 
-                {/* Delete Button (Visual only for now) */}
                 <button 
                   className="absolute top-4 right-4 p-2 text-gray-300 hover:text-red-500 hover:bg-red-50 rounded-full transition opacity-0 group-hover:opacity-100"
                   title="Delete Address"
@@ -115,7 +103,6 @@ export default function SavedAddresses() {
               </div>
             ))
           ) : (
-            /* Empty State */
             <div className="col-span-full text-center py-16 bg-white rounded-3xl border border-dashed border-gray-300">
                <div className="w-20 h-20 bg-gray-50 rounded-full flex items-center justify-center mx-auto mb-4 text-gray-300">
                  <HiOutlineLocationMarker size={40} />
@@ -135,7 +122,6 @@ export default function SavedAddresses() {
         </div>
       </div>
 
-      {/* The Modal */}
       {showModal && (
         <AddressModal
           open={showModal}

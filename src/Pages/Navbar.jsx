@@ -2,26 +2,28 @@ import React, { useEffect, useState, useRef } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { HiMenuAlt3, HiX, HiOutlineUser, HiOutlineClock, HiOutlineLocationMarker, HiOutlineHeart, HiOutlineLogout, HiOutlineShoppingBag } from "react-icons/hi";
 import { BsSunFill, BsMoonStarsFill } from "react-icons/bs";
+import { useDispatch, useSelector } from "react-redux";
+import { toggleTheme } from "../redux/themeSlice.js";
 
 export default function Navbar() {
-  const [theme, setTheme] = useState("light");
   const [open, setOpen] = useState(false);
   const [user, setUser] = useState(null);
   const [scrolled, setScrolled] = useState(false);
   const [showUserMenu, setShowUserMenu] = useState(false);
+  const dispatch = useDispatch();
+  const theme = useSelector((state) => state.theme.mode);
 
   const location = useLocation();
   const navigate = useNavigate();
   const userMenuRef = useRef(null);
 
-  // Handle Scroll Effect
+
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 20);
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  // Handle User & Theme Loading
   useEffect(() => {
     const savedUser = localStorage.getItem("user");
     if (savedUser) {
@@ -33,24 +35,10 @@ export default function Navbar() {
 
     const savedTheme = localStorage.getItem("theme");
     if (savedTheme) {
-      setTheme(savedTheme);
+      //setTheme(savedTheme);
     }
-    // Removed auto keying to dark mode based on system preference
   }, []);
 
-  // Theme Switching Logic
-  useEffect(() => {
-    if (theme === "dark") {
-      document.documentElement.classList.add("dark");
-      document.body.classList.add("dark");
-    } else {
-      document.documentElement.classList.remove("dark");
-      document.body.classList.remove("dark");
-    }
-    localStorage.setItem("theme", theme);
-  }, [theme]);
-
-  // Click Outside for User Menu
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (userMenuRef.current && !userMenuRef.current.contains(event.target)) {
@@ -72,10 +60,6 @@ export default function Navbar() {
     setUser(null);
     setShowUserMenu(false);
     navigate("/");
-  };
-
-  const toggleTheme = () => {
-    setTheme(theme === "light" ? "dark" : "light");
   };
 
   const getInitials = (name) => {
@@ -104,22 +88,21 @@ export default function Navbar() {
             rounded-full px-6
             flex items-center justify-between
             ${scrolled
-              ? "py-3 bg-white/80 backdrop-blur-md shadow-lg border border-gray-200/50"
-              : "py-4 bg-white border-0"
+              ? "py-3 bg-card dark:bg-slate-900 backdrop-blur-md shadow-lg border border-theme dark:border-slate-700"
+              : "py-4 bg-white dark:bg-slate-900 border-0"
             }
           `}
         >
-          {/* --- LOGO --- */}
+
           <Link to="/" className="flex items-center gap-2 group">
             <div className="w-8 h-8 bg-green-600 rounded-lg flex items-center justify-center text-white font-bold text-xl group-hover:rotate-12 transition-transform">
               U
             </div>
-            <h1 className="text-2xl font-bold tracking-tight text-gray-800">
+            <h1 className="text-2xl font-bold tracking-tight text-gray-800 dark:text-white">
               Uni<span className="text-green-600">Mart</span>
             </h1>
           </Link>
 
-          {/* --- DESKTOP LINKS --- */}
           <ul className="hidden md:flex items-center gap-1">
             {navLinks.map((link) => {
               const isActive = location.pathname === link.path;
@@ -131,7 +114,7 @@ export default function Navbar() {
                       px-4 py-2 rounded-full text-sm font-medium transition-all duration-200
                       ${isActive
                         ? "bg-green-100 text-green-700"
-                        : "text-gray-800 hover:bg-gray-100 hover:text-green-600"
+                        : "text-gray-800 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-slate-800 hover:text-green-600"
                       }
                     `}
                   >
@@ -142,31 +125,26 @@ export default function Navbar() {
             })}
           </ul>
 
-          {/* --- RIGHT ACTIONS --- */}
           <div className="hidden md:flex items-center gap-4">
-
-            {/* Theme Toggle (Modern Icon Button) */}
             <button
-              onClick={toggleTheme}
-              className="p-2 rounded-full text-gray-500 hover:bg-gray-100 transition-colors"
+              onClick={() => dispatch(toggleTheme())}
+              className="p-2 rounded-full text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-slate-800 transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-green-500"
               aria-label="Toggle Theme"
             >
-              {theme === "light" ? (
-                <BsMoonStarsFill className="w-5 h-5 text-indigo-600" />
-              ) : (
+              {theme === "dark" ? (
                 <BsSunFill className="w-5 h-5 text-yellow-400" />
+              ) : (
+                <BsMoonStarsFill className="w-5 h-5 text-indigo-600" />
               )}
             </button>
 
-            {/* Divider */}
             <div className="h-6 w-[1px] bg-gray-300"></div>
 
-            {/* Auth State */}
             {user ? (
               <div className="flex items-center gap-3 pl-2" ref={userMenuRef}>
                 <div className="text-right hidden lg:block">
-                  <p className="text-xs text-gray-500">Welcome back,</p>
-                  <p className="text-sm font-bold text-gray-800 leading-none">{user.name.split(" ")[0]}</p>
+                  <p className="text-xs text-gray-500 dark:text-gray-400">Welcome back,</p>
+                  <p className="text-sm font-bold text-gray-800 dark:text-white leading-none">{user.name.split(" ")[0]}</p>
                 </div>
 
                 <div className="relative">
@@ -187,13 +165,11 @@ export default function Navbar() {
                     )}
                   </button>
 
-                  {/* --- RICH USER DROPDOWN (Forced White Mode) --- */}
                   {showUserMenu && (
                     <div className="absolute right-0 mt-4 w-80 rounded-3xl z-50 animate-spring-enter
-                      bg-white shadow-[0_20px_60px_-15px_rgba(0,0,0,0.3)] ring-1 ring-black/5
+                      bg-white dark:bg-slate-900 shadow-[0_20px_60px_-15px_rgba(0,0,0,0.3)] ring-1 ring-black/5 dark:ring-white/10
                     ">
 
-                      {/* Header */}
                       <div className="relative p-6 bg-gradient-to-br from-green-600 to-emerald-500 text-white overflow-hidden rounded-t-3xl">
                         <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full blur-2xl -translate-y-16 translate-x-16 pointer-events-none"></div>
                         <div className="absolute bottom-0 left-0 w-24 h-24 bg-black/10 rounded-full blur-xl translate-y-12 -translate-x-8 pointer-events-none"></div>
@@ -211,7 +187,7 @@ export default function Navbar() {
                         </div>
                       </div>
 
-                      <div className="p-3 bg-white rounded-b-3xl">
+                      <div className="p-3 bg-white dark:bg-slate-900 rounded-b-3xl">
                         <div className="space-y-1">
 
                           <div className="px-3 py-2 text-[10px] font-bold text-gray-400 uppercase tracking-widest">My Account</div>
@@ -225,13 +201,13 @@ export default function Navbar() {
                               key={idx}
                               to={item.to}
                               onClick={() => setShowUserMenu(false)}
-                              className="flex items-center gap-4 px-3 py-2.5 rounded-xl hover:bg-green-50/80 transition-all duration-200 group relative overflow-hidden"
+                              className="flex items-center gap-4 px-3 py-2.5 rounded-xl hover:bg-green-50/80 dark:hover:bg-slate-800 transition-all duration-200 group relative overflow-hidden"
                             >
-                              <div className="w-10 h-10 rounded-lg bg-gray-50 flex items-center justify-center text-gray-500 group-hover:bg-white group-hover:text-[#16A34A] group-hover:shadow-md transition-all duration-300 group-hover:scale-110">
+                              <div className="w-10 h-10 rounded-lg bg-gray-50 dark:bg-slate-800 flex items-center justify-center text-gray-500 dark:text-gray-400 group-hover:bg-white dark:group-hover:bg-slate-700 group-hover:text-[#16A34A] group-hover:shadow-md transition-all duration-300 group-hover:scale-110">
                                 <item.icon className="text-xl" />
                               </div>
                               <div>
-                                <span className="font-semibold text-gray-700 block text-sm group-hover:text-gray-900">{item.label}</span>
+                                <span className="font-semibold text-gray-700 dark:text-gray-200 block text-sm group-hover:text-gray-900 dark:group-hover:text-white">{item.label}</span>
                                 <span className="text-[11px] text-gray-400 group-hover:text-green-600/70">{item.sub}</span>
                               </div>
                               <div className="absolute right-3 opacity-0 group-hover:opacity-100 transform translate-x-2 group-hover:translate-x-0 transition-all duration-300 text-[#16A34A]">
@@ -251,13 +227,13 @@ export default function Navbar() {
                               key={idx}
                               to={item.to}
                               onClick={() => setShowUserMenu(false)}
-                              className="flex items-center gap-4 px-3 py-2.5 rounded-xl hover:bg-green-50/80 transition-all duration-200 group relative overflow-hidden"
+                              className="flex items-center gap-4 px-3 py-2.5 rounded-xl hover:bg-green-50/80 dark:hover:bg-slate-800 transition-all duration-200 group relative overflow-hidden"
                             >
-                              <div className="w-10 h-10 rounded-lg bg-gray-50 flex items-center justify-center text-gray-500 group-hover:bg-white group-hover:text-[#16A34A] group-hover:shadow-md transition-all duration-300 group-hover:scale-110">
+                              <div className="w-10 h-10 rounded-lg bg-gray-50 dark:bg-slate-800 flex items-center justify-center text-gray-500 dark:text-gray-400 group-hover:bg-white dark:group-hover:bg-slate-700 group-hover:text-[#16A34A] group-hover:shadow-md transition-all duration-300 group-hover:scale-110">
                                 <item.icon className="text-xl" />
                               </div>
                               <div>
-                                <span className="font-semibold text-gray-700 block text-sm group-hover:text-gray-900">{item.label}</span>
+                                <span className="font-semibold text-gray-700 dark:text-gray-200 block text-sm group-hover:text-gray-900 dark:group-hover:text-white">{item.label}</span>
                                 <span className="text-[11px] text-gray-400 group-hover:text-green-600/70">{item.sub}</span>
                               </div>
                               <div className="absolute right-3 opacity-0 group-hover:opacity-100 transform translate-x-2 group-hover:translate-x-0 transition-all duration-300 text-[#16A34A]">
@@ -268,8 +244,8 @@ export default function Navbar() {
 
                           <div className="my-2 border-t border-gray-100"></div>
 
-                          <button onClick={handleLogout} className="w-full flex items-center gap-4 px-3 py-2.5 rounded-xl hover:bg-red-50 transition-all duration-200 group text-left">
-                            <div className="w-10 h-10 rounded-lg bg-red-50 flex items-center justify-center text-red-500 group-hover:bg-red-500 group-hover:text-white group-hover:shadow-md transition-all duration-300 group-hover:scale-110">
+                          <button onClick={handleLogout} className="w-full flex items-center gap-4 px-3 py-2.5 rounded-xl hover:bg-red-50 dark:hover:bg-red-900/20 transition-all duration-200 group text-left">
+                            <div className="w-10 h-10 rounded-lg bg-red-50 dark:bg-red-900/20 flex items-center justify-center text-red-500 group-hover:bg-red-500 group-hover:text-white group-hover:shadow-md transition-all duration-300 group-hover:scale-110">
                               <HiOutlineLogout className="text-xl" />
                             </div>
                             <div>
@@ -294,17 +270,15 @@ export default function Navbar() {
             )}
           </div>
 
-          {/* --- MOBILE TOGGLE --- */}
           <button
             onClick={() => setOpen(!open)}
-            className="md:hidden p-2 text-gray-600 bg-gray-100 rounded-full"
+            className="md:hidden p-2 text-gray-600 dark:text-gray-300 bg-gray-100 dark:bg-slate-800 rounded-full"
           >
             {open ? <HiX className="w-6 h-6" /> : <HiMenuAlt3 className="w-6 h-6" />}
           </button>
         </nav>
       </div>
 
-      {/* --- MOBILE MENU OVERLAY --- */}
       <div
         className={`
           md:hidden fixed inset-0 z-40 bg-black/20 backdrop-blur-sm transition-opacity duration-300
@@ -316,12 +290,11 @@ export default function Navbar() {
       <div
         className={`
           md:hidden absolute top-24 left-4 right-4 z-50
-          bg-white rounded-2xl shadow-2xl border border-gray-200
+          bg-white dark:bg-slate-900 rounded-2xl shadow-2xl border border-gray-200 dark:border-slate-700
           p-5 flex flex-col gap-4 transform transition-all duration-300 origin-top
           ${open ? "scale-100 opacity-100 translate-y-0" : "scale-95 opacity-0 -translate-y-4 pointer-events-none"}
         `}
       >
-        {/* Mobile Links */}
         <div className="flex flex-col gap-2">
           {navLinks.map((link) => (
             <Link
@@ -332,7 +305,7 @@ export default function Navbar() {
                 px-4 py-3 rounded-xl font-medium flex items-center justify-between
                 ${location.pathname === link.path
                   ? "bg-green-50 text-green-700"
-                  : "text-gray-600 hover:bg-gray-50"
+                  : "text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-slate-800"
                 }
               `}
             >
@@ -344,12 +317,11 @@ export default function Navbar() {
 
         <div className="h-[1px] bg-gray-100 w-full"></div>
 
-        {/* Mobile Actions */}
         <div className="flex items-center justify-between px-2">
           <div className="flex items-center gap-3">
             <button
               onClick={toggleTheme}
-              className="w-10 h-10 flex items-center justify-center rounded-full bg-gray-100 text-gray-600"
+              className="w-10 h-10 flex items-center justify-center rounded-full bg-gray-100 dark:bg-slate-800 text-gray-600 dark:text-gray-300"
             >
               {theme === "light" ? <BsMoonStarsFill /> : <BsSunFill />}
             </button>
@@ -360,7 +332,7 @@ export default function Navbar() {
         </div>
 
         {user ? (
-          <div className="bg-gray-50 p-3 rounded-xl flex items-center justify-between">
+          <div className="bg-gray-50 dark:bg-slate-800 p-3 rounded-xl flex items-center justify-between">
             <div className="flex items-center gap-3">
               {user.avatar ? (
                 <img
@@ -374,7 +346,7 @@ export default function Navbar() {
                 </div>
               )}
               <div>
-                <p className="text-sm font-bold text-gray-900">{user.name}</p>
+                <p className="text-sm font-bold text-gray-900 dark:text-white">{user.name}</p>
                 <button onClick={handleLogout} className="text-xs text-red-500 font-medium">Log out</button>
               </div>
             </div>
@@ -405,7 +377,17 @@ export default function Navbar() {
         .animate-spring-enter {
           animation: spring-enter 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
         }
+          .theme-toggle {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 20px;
+  color: var(--text);
+}
+
       `}</style>
     </div>
   );
 }
+
+
