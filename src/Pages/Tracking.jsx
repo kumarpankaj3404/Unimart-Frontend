@@ -132,7 +132,7 @@ export default function Tracking() {
         socket.off("DELIVERY_LOCATION_UPDATE", handleLocationUpdate);
       };
     }
-  }, [socket, activeOrder?._id, activeOrder?.status]); 
+  }, [socket, activeOrder?._id, activeOrder?.status]);
 
   useEffect(() => {
     if (!mapRef.current || !activeOrder) return;
@@ -155,24 +155,86 @@ export default function Tracking() {
         scooterMarkerRef.current = null;
       }
     };
-  }, [activeOrder?._id]); 
+  }, [activeOrder?._id]);
+
+  const routePolylineRef = useRef(null);
+  const destMarkerRef = useRef(null);
+  const [eta, setEta] = useState(null);
+
+  // ... (existing code)
 
   useEffect(() => {
-    if (!mapInstance.current || !driverLocation) return;
+    if (!mapInstance.current || !driverLocation || !activeOrder) return;
 
-    const [lat, lng] = driverLocation;
+    const [driverLat, driverLng] = driverLocation;
 
+    // 1. Update/Create Driver Marker
     if (!scooterMarkerRef.current) {
-      scooterMarkerRef.current = L.marker([lat, lng], {
+      scooterMarkerRef.current = L.marker([driverLat, driverLng], {
         icon: createScooterIcon(),
         zIndexOffset: 1000,
       }).addTo(mapInstance.current);
-      mapInstance.current.setView([lat, lng], 16);
     } else {
-      scooterMarkerRef.current.setLatLng([lat, lng]);
-      mapInstance.current.panTo([lat, lng], { animate: true });
+      scooterMarkerRef.current.setLatLng([driverLat, driverLng]);
     }
-  }, [driverLocation]);
+
+    // 2. Get Destination Coordinates
+    const destLat = activeOrder.address?.lat || activeOrder.shippingAddress?.lat;
+    const destLng = activeOrder.address?.lng || activeOrder.shippingAddress?.lng;
+
+    if (destLat && destLng) {
+      // 3. Update/Create Destination Marker
+      if (!destMarkerRef.current) {
+        destMarkerRef.current = L.marker([destLat, destLng])
+          .addTo(mapInstance.current)
+          .bindPopup("Destination")
+          .openPopup();
+      }
+
+      // 4. Fetch Route from OSRM
+      const fetchRoute = async () => {
+        try {
+          const response = await fetch(
+            `https://router.project-osrm.org/route/v1/driving/${driverLng},${driverLat};${destLng},${destLat}?overview=full&geometries=geojson`
+          );
+          const data = await response.json();
+
+          if (data.routes && data.routes.length > 0) {
+            const route = data.routes[0];
+            const coordinates = route.geometry.coordinates.map(coord => [coord[1], coord[0]]); // Flip [lng, lat] to [lat, lng]
+
+            // Draw Polyline
+            if (routePolylineRef.current) {
+              routePolylineRef.current.setLatLngs(coordinates);
+            } else {
+              routePolylineRef.current = L.polyline(coordinates, {
+                color: 'black',
+                weight: 5,
+                opacity: 0.8,
+                lineJoin: 'round'
+              }).addTo(mapInstance.current);
+            }
+
+            // Calculate ETA (Speed: 15 km/h = 250 meters/min)
+            const durationMins = Math.round(route.distance / 250);
+            setEta(durationMins);
+
+            // Fit bounds to show whole route
+            const bounds = L.latLngBounds([driverLat, driverLng], [destLat, destLng]);
+            mapInstance.current.fitBounds(bounds, { padding: [50, 50] });
+          }
+        } catch (error) {
+          console.error("Error fetching route:", error);
+        }
+      };
+
+      fetchRoute();
+    } else {
+      // Fallback if no dest coords: just center on driver
+      mapInstance.current.panTo([driverLat, driverLng], { animate: true });
+    }
+
+  }, [driverLocation, activeOrder]);
 
 
   const getStatusColor = (status) => {
@@ -271,6 +333,11 @@ export default function Tracking() {
                       <div>
                         <p className="font-bold text-gray-800 dark:text-white">{activeOrder.deliveredBy.name || "Partner"}</p>
                         <p className="text-xs text-green-600 font-bold">● {driverLocation ? "Live on Map" : "Connecting..."}</p>
+                        {eta !== null && (
+                          <p className="text-sm font-bold text-gray-800 dark:text-white mt-1">
+                            🏁 Arriving in <span className="text-[#16A34A] text-lg">{eta} min</span>
+                          </p>
+                        )}
                       </div>
                     </div>
                   </div>
