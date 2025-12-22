@@ -20,7 +20,6 @@ export default function DeliveryPartnerDashboard() {
   const [locationStatus, setLocationStatus] = useState("Initializing...");
   const watchIdRef = useRef(null);
 
-  // 1. Initial Data Load
   useEffect(() => {
     fetchData();
     if (currentUser) setIsOnline(currentUser.isAvailable);
@@ -28,7 +27,6 @@ export default function DeliveryPartnerDashboard() {
 
   const fetchData = async () => {
     try {
-      // Matches 'order.routes.js' -> router.route('/my-deliveries')
       const res = await api.get("/orders/my-deliveries");
       const active = res.data.data.find(o => ["processed", "shipped"].includes(o.status));
 
@@ -37,8 +35,6 @@ export default function DeliveryPartnerDashboard() {
         if (socket) socket.emit("JOIN_ORDER", { orderId: active._id });
       }
 
-      // Note: Ensure you have a route for this if you want to see available orders
-      // It is not in the 'order.routes.js' snippet you shared, so this might 404
       try {
         const resAvail = await api.get("/orders/available");
         setAvailableOrders(resAvail.data.data);
@@ -51,7 +47,6 @@ export default function DeliveryPartnerDashboard() {
     }
   };
 
-  // 2. Socket Listeners
   useEffect(() => {
     if (!socket) return;
     const handleNewAssignment = (order) => {
@@ -67,13 +62,11 @@ export default function DeliveryPartnerDashboard() {
     };
   }, [socket]);
 
-  // 3. Live Tracking
   useEffect(() => {
     if (isOnline && activeOrder && socket) {
       setLocationStatus("📍 Broadcasting GPS...");
       const success = (pos) => {
         const { latitude, longitude } = pos.coords;
-        // Matches 'delivery.routes.js' -> router.post('/location')
         api.post("/delivery/location", {
           orderId: activeOrder._id,
           latitude,
@@ -97,12 +90,11 @@ export default function DeliveryPartnerDashboard() {
     };
   }, [isOnline, activeOrder, socket]);
 
-  // --- ACTIONS ---
+
 
   const toggleAvailability = async (newState) => {
     try {
       setIsOnline(newState);
-      // UPDATED: Matches 'delivery.routes.js' -> router.post('/available')
       await api.post("/delivery/available", { isAvailable: newState });
 
       if (newState) fetchData();
@@ -115,7 +107,6 @@ export default function DeliveryPartnerDashboard() {
 
   const handleAccept = async (orderId) => {
     try {
-      // Logic unchanged as requested
       const res = await api.patch(`/orders/accept/${orderId}`);
       setActiveOrder(res.data.data);
       socket.emit("JOIN_ORDER", { orderId: res.data.data._id });
@@ -128,7 +119,6 @@ export default function DeliveryPartnerDashboard() {
   const handleDeliver = async () => {
     if (!window.confirm("Mark order as delivered?")) return;
     try {
-      // UPDATED: Matches 'delivery.routes.js' -> router.post('/deliver/:orderId')
       await api.post(`/delivery/deliver/${activeOrder._id}`);
 
       setActiveOrder(null);
@@ -142,7 +132,7 @@ export default function DeliveryPartnerDashboard() {
   };
 
   const openGoogleMaps = () => {
-    // Robust check for address object
+
     const addressData = activeOrder?.address || activeOrder?.drivingAddress;
 
     if (!addressData) {
@@ -152,15 +142,13 @@ export default function DeliveryPartnerDashboard() {
 
     let query = "";
 
-    // Prioritize Coordinates for precision
     if (addressData.lat && addressData.lng && addressData.lat !== 0) {
       query = `${addressData.lat},${addressData.lng}`;
     }
-    // Fallback to text address
+
     else if (addressData.fullAddress) {
       query = encodeURIComponent(addressData.fullAddress);
     }
-    // Fallback to string if address is just a string (legacy)
     else if (typeof addressData === 'string') {
       query = encodeURIComponent(addressData);
     }
@@ -168,14 +156,12 @@ export default function DeliveryPartnerDashboard() {
       return alert("Invalid address format for navigation.");
     }
 
-    // Use standard Google Maps Universal Link
     const url = `https://www.google.com/maps/dir/?api=1&destination=${query}&travelmode=driving`;
     window.open(url, "_blank");
   };
 
   return (
     <div className="min-h-screen bg-slate-50 font-sans pb-24 selection:bg-emerald-500 selection:text-white">
-      {/* Header */}
       <div className="fixed top-0 inset-x-0 z-40 bg-white/80 backdrop-blur-md border-b border-gray-200/50 shadow-sm transition-all duration-300">
         <div className="px-6 py-4 flex justify-between items-center max-w-2xl mx-auto">
           <div className="flex items-center gap-3">
@@ -215,13 +201,11 @@ export default function DeliveryPartnerDashboard() {
 
       <div className="pt-28 max-w-xl mx-auto px-4 space-y-8">
 
-        {/* ACTIVE ORDER CARD */}
         {activeOrder ? (
           <div className="relative group perspective-1000">
             <div className="absolute inset-0 bg-emerald-500/20 blur-xl rounded-3xl transform group-hover:bg-emerald-500/30 transition-all duration-500 -z-10"></div>
             <div className="bg-white rounded-[2rem] shadow-2xl overflow-hidden border border-emerald-100 ring-1 ring-emerald-500/10">
 
-              {/* Card Header */}
               <div className="bg-gradient-to-r from-emerald-600 to-teal-600 px-8 py-5 flex justify-between items-center text-white relative overflow-hidden">
                 <div className="absolute inset-0 opacity-10 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')]"></div>
                 <div className="relative z-10 flex items-center gap-2.5">
@@ -237,7 +221,6 @@ export default function DeliveryPartnerDashboard() {
               </div>
 
               <div className="p-6 space-y-6">
-                {/* Address Section */}
                 <div className="flex gap-4">
                   <div className="flex-1 space-y-3">
                     <div className="flex items-start gap-3">
@@ -266,7 +249,6 @@ export default function DeliveryPartnerDashboard() {
 
                 <div className="border-t border-dashed border-slate-200"></div>
 
-                {/* Order Items */}
                 <div className="bg-slate-50 rounded-2xl p-5 border border-slate-100">
                   <div className="flex justify-between items-end mb-4">
                     <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider">Order Contents</h3>
@@ -285,7 +267,6 @@ export default function DeliveryPartnerDashboard() {
                   </div>
                 </div>
 
-                {/* Footer Action */}
                 <div className="bg-slate-900 rounded-2xl p-5 text-white shadow-2xl mt-4 flex justify-between items-center ring-4 ring-slate-100">
                   <div>
                     <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-1">Amount to Collect</p>
@@ -303,7 +284,7 @@ export default function DeliveryPartnerDashboard() {
             </div>
           </div>
         ) : (
-          /* EMPTY STATE */
+         
           <div className="bg-white rounded-[2.5rem] p-12 text-center shadow-xl border border-slate-100 max-w-sm mx-auto mt-10 relative overflow-hidden">
             <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-emerald-400 to-teal-500"></div>
             <div className={`w-28 h-28 mx-auto rounded-full flex items-center justify-center mb-6 transition-all duration-500 ${isOnline ? "bg-emerald-50 text-emerald-500 shadow-emerald-100 shadow-xl scale-110" : "bg-slate-50 text-slate-300 shadow-inner"}`}>
@@ -321,7 +302,6 @@ export default function DeliveryPartnerDashboard() {
           </div>
         )}
 
-        {/* AVAILABLE REQUESTS (Legacy/Fallback) */}
         {!activeOrder && availableOrders.length > 0 && (
           <div className="space-y-4 pt-4 border-t border-dashed border-slate-300">
             <h3 className="font-bold text-slate-500 text-sm uppercase tracking-wide flex items-center gap-2">

@@ -13,7 +13,6 @@ export const SocketProvider = ({ children }) => {
     const { currentUser } = useSelector((state) => state.auth);
 
     useEffect(() => {
-        // 1. Robust Token Extraction (Checks Redux, LocalStorage, and User Object)
         const storedUser = localStorage.getItem("user") ? JSON.parse(localStorage.getItem("user")) : null;
 
         const token =
@@ -22,7 +21,6 @@ export const SocketProvider = ({ children }) => {
             storedUser?.accessToken ||
             localStorage.getItem("accessToken");
 
-        // 2. Strict Check: Do not connect without token
         if (!token || !currentUser) {
             if (socket) {
                 console.log("🔴 Disconnecting Socket (No Token/User)");
@@ -31,21 +29,18 @@ export const SocketProvider = ({ children }) => {
             }
             return;
         }
-
-        // 3. Prevent multiple connections
         if (socket && socket.connected) return;
 
         console.log("🔌 Initializing Socket Connection...");
 
         const newSocket = io("http://localhost:8001", {
             auth: {
-                token: token // ⚠️ MUST PASS TOKEN HERE per Manual
+                token: token 
             },
             transports: ["websocket"],
             withCredentials: true
         });
 
-        // 4. Listeners
         newSocket.on("connect", () => {
             console.log("🟢 Socket Connected:", newSocket.id);
         });
@@ -60,7 +55,7 @@ export const SocketProvider = ({ children }) => {
             newSocket.disconnect();
         };
 
-    }, [currentUser]); // Re-run if user logs in/out
+    }, [currentUser]); 
 
     return (
         <SocketContext.Provider value={socket}>
