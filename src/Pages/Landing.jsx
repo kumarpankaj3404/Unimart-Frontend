@@ -236,103 +236,92 @@ export default function Landing() {
       </section>
 
 
-      <footer className="relative bg-[#0f4227] dark:bg-black text-white pt-16 pb-10 mt-20">
+      <footer className="relative bg-emerald-50 border-t border-emerald-200 text-slate-600 dark:bg-slate-900 dark:border-white/10 dark:text-slate-300 py-16 overflow-hidden mt-20 transition-colors duration-300">
+        {/* Decorative Background Elements */}
+        <div className="absolute top-0 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-[#22C55E] to-transparent opacity-50"></div>
+        <div className="absolute -top-40 -right-40 w-96 h-96 bg-emerald-400/20 dark:bg-[#22C55E]/10 rounded-full blur-3xl pointer-events-none"></div>
 
-        <div className="absolute top-0 left-0 w-full h-2 bg-[linear-gradient(90deg,#16A34A,#22C55E,#16A34A)]
-"></div>
+        <div className="max-w-7xl mx-auto px-6 relative z-10">
+          <div className="grid grid-cols-1 md:grid-cols-12 gap-12 lg:gap-8">
 
-        <div className="max-w-7xl mx-auto px-6 grid grid-cols-1 md:grid-cols-4 gap-12">
+            {/* Brand Section */}
+            <div className="md:col-span-4 space-y-6">
+              <Link to="/" className="inline-block">
+                <h4 className="text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight">
+                  Uni<span className="text-[#22C55E]">Mart</span>
+                  <span className="text-[#22C55E] text-4xl">.</span>
+                </h4>
+              </Link>
+              <p className="text-slate-600 dark:text-slate-400 text-lg leading-relaxed max-w-sm">
+                Experience the future of grocery delivery. Freshness delivered to your doorstep in minutes, not hours.
+              </p>
+              <div className="flex gap-4">
+                {[FaFacebookF, FaInstagram, FaTwitter].map((Icon, i) => (
+                  <a key={i} href="#" className="w-10 h-10 rounded-full bg-white border border-emerald-100 text-emerald-600 dark:bg-white/5 dark:border-white/10 dark:text-slate-300 flex items-center justify-center hover:bg-[#22C55E] hover:text-white hover:border-[#22C55E] transition-all duration-300 group shadow-sm dark:shadow-none">
+                    <Icon className="text-lg group-hover:scale-110 transition-transform" />
+                  </a>
+                ))}
+              </div>
+            </div>
 
-          <div>
-            <h4 className="text-3xl font-extrabold">
-              Uni<span className="text-[#22C55E]">Mart</span>
-            </h4>
-            <p className="mt-4 text-lg text-white/80">
-              Delivering freshness faster than ever.
-            </p>
+            {/* Links Section */}
+            <div className="md:col-span-2 md:col-start-6">
+              <h5 className="text-slate-900 dark:text-white font-bold text-lg mb-6">Explore</h5>
+              <ul className="space-y-4">
+                <li><Link to="/items" className="hover:text-[#22C55E] hover:translate-x-1 inline-block transition-all">Shop Now</Link></li>
+                <li><Link to="/tracking" className="hover:text-[#22C55E] hover:translate-x-1 inline-block transition-all">Track Order</Link></li>
+                <li><Link to="/delivery-partner-login" className="hover:text-[#22C55E] hover:translate-x-1 inline-block transition-all">Partner App</Link></li>
+              </ul>
+            </div>
 
-            <div className="flex gap-4 mt-6">
-              {[FaFacebookF, FaInstagram, FaTwitter].map((Icon, i) => (
-                <div
-                  key={i}
-                  className="w-10 h-10 rounded-full bg-white/10 backdrop-blur-lg 
-            flex items-center justify-center hover:bg-white/20 transition cursor-pointer"
-                >
-                  <Icon className="text-xl" />
+            {/* Contact Info */}
+            <div className="md:col-span-3">
+              <h5 className="text-slate-900 dark:text-white font-bold text-lg mb-6">Contact Us</h5>
+              <ul className="space-y-4 text-slate-600 dark:text-slate-400">
+                <li className="flex items-start gap-3">
+                  <span className="text-[#22C55E] mt-1 text-lg">📍</span>
+                  <span>123 Innovation Drive,<br />Tech City, TC 90210</span>
+                </li>
+                <li className="flex items-center gap-3">
+                  <span className="text-[#22C55E] text-lg">📧</span>
+                  <a href="mailto:support@unimart.com" className="hover:text-[#22C55E] dark:hover:text-white transition-colors">support@unimart.com</a>
+                </li>
+                <li className="flex items-center gap-3">
+                  <span className="text-[#22C55E] text-lg">📞</span>
+                  <a href="tel:+1234567890" className="hover:text-[#22C55E] dark:hover:text-white transition-colors">+1 (555) 123-4567</a>
+                </li>
+              </ul>
+            </div>
+
+            {/* Newsletter */}
+            <div className="md:col-span-3">
+              <h5 className="text-slate-900 dark:text-white font-bold text-lg mb-6">Newsletter</h5>
+              <div className="bg-white dark:bg-white/5 p-1 rounded-xl border border-emerald-200 dark:border-white/10 focus-within:border-[#22C55E]/50 transition-colors shadow-sm dark:shadow-none">
+                <div className="flex">
+                  <input
+                    type="email"
+                    placeholder="Email address"
+                    className="bg-transparent w-full px-4 py-3 text-slate-700 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none"
+                  />
+                  <button className="bg-[#22C55E] hover:bg-[#16A34A] text-white px-4 rounded-lg m-1 transition-colors font-medium">
+                    →
+                  </button>
                 </div>
-              ))}
-            </div>
-          </div>
-
-          <div>
-            <h5 className="text-xl font-semibold mb-4">Quick Links</h5>
-           <ul className="space-y-3 text-white/80">
-  <li>
-    <Link to="/login" className="hover:text-[#22C55E] transition">
-      Shop
-    </Link>
-  </li>
-
-  <li>
-    <Link to="/items" className="hover:text-[#22C55E] transition">
-      Categories
-    </Link>
-  </li>
-
-  <li>
-    <Link to="/tracking" className="hover:text-[#22C55E] transition">
-      Track Order
-    </Link>
-  </li>
-
-  {/* <li>
-    <Link to="/support" className="hover:text-[#22C55E] transition">
-      Support
-    </Link>
-  </li> */}
-</ul>
-
-          </div>
-
-          <div>
-            <h5 className="text-xl font-semibold mb-4">Customer Service</h5>
-            <ul className="space-y-3 text-white/80">
-              <li>Help Center</li>
-              <li>Returns & Refunds</li>
-              <li>Privacy Policy</li>
-              <li>Terms & Conditions</li>
-            </ul>
-          </div>
-
-          <div>
-            <h5 className="text-xl font-semibold mb-4">Get Updates</h5>
-
-            <div className="bg-white/10 backdrop-blur-lg p-4 rounded-xl w-100">
-              <input
-                type="email"
-                placeholder="Enter your email"
-                className="w-full p-3 rounded-md bg-white/20 text-white placeholder-white/60"
-              />
-              <button className="w-full mt-4 bg-[#22C55E] hover:bg-[#16A34A] text-white font-semibold py-3 rounded-lg transition">
-                Subscribe
-              </button>
-            </div>
-
-            <div className="flex gap-4 mt-6">
-              <div className="bg-white/10 px-4 py-2 rounded-lg backdrop-blur-md hover:bg-white/20 cursor-pointer">
-                Android App
               </div>
-              <div className="bg-white/10 px-4 py-2 rounded-lg backdrop-blur-md hover:bg-white/20 cursor-pointer">
-                iOS App
-              </div>
+              <p className="text-xs text-slate-500 mt-4">
+                Subscribe to get special offers, free giveaways, and once-in-a-lifetime deals.
+              </p>
             </div>
           </div>
 
+          <div className="border-t border-emerald-200 dark:border-white/10 mt-16 pt-8 flex flex-col md:flex-row justify-between items-center gap-4 text-sm text-slate-500">
+            <p>© {new Date().getFullYear()} UniMart. All rights reserved.</p>
+            <div className="flex gap-6">
+              <a href="#" className="hover:text-[#22C55E] dark:hover:text-white transition-colors">Privacy Policy</a>
+              <a href="#" className="hover:text-[#22C55E] dark:hover:text-white transition-colors">Terms of Service</a>
+            </div>
+          </div>
         </div>
-
-        <p className="text-center text-white/60 mt-14">
-          © {new Date().getFullYear()} UniMart — All rights reserved.
-        </p>
       </footer>
       <HowItWorksModal
         open={howOpen}
