@@ -1,12 +1,10 @@
 import React, { useEffect } from "react";
 import Navbar from "./Navbar"; 
-import { FaLeaf, FaBolt, FaHeart, FaUsers } from "react-icons/fa";
+// FIXED: Removed the space in FaUserTie
+import { FaLeaf, FaBolt, FaHeart, FaUserTie } from "react-icons/fa";
 import { MdVerified } from "react-icons/md";
 import { Link } from "react-router-dom";
 
-const team1 = "https://images.unsplash.com/photo-1560250097-0b93528c311a?w=400&auto=format&fit=crop&q=60";
-const team2 = "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=400&auto=format&fit=crop&q=60";
-const team3 = "https://images.unsplash.com/photo-1580489944761-15a19d654956?w=400&auto=format&fit=crop&q=60";
 const farmImg = "https://i.pinimg.com/1200x/df/d8/de/dfd8de92c0379702e4df753fd1bfe4b6.jpg";
 
 export default function About() {
@@ -19,6 +17,7 @@ export default function About() {
     <div className="bg-[#F0FDF4] dark:bg-slate-950 text-[#14532D] dark:text-green-100 overflow-x-hidden selection:bg-[#22C55E] selection:text-white transition-colors duration-300">
       <Navbar />
 
+      {/* Hero Section */}
       <section className="pt-32 pb-20 max-w-7xl mx-auto px-6 text-center">
         <div className="fade-up">
           <span className="bg-[#22C55E]/20 text-[#14532D] px-5 py-2 rounded-full text-sm font-bold uppercase tracking-wider">
@@ -35,16 +34,14 @@ export default function About() {
         </div>
       </section>
 
+      {/* Trust Section */}
       <section className="py-16 bg-white dark:bg-slate-900 transition-colors duration-300">
         <div className="max-w-7xl mx-auto px-6 grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
-
           <div className="relative fade-up">
             <div className="absolute top-10 -left-10 w-32 h-32 bg-[#22C55E]/30 rounded-full blur-3xl"></div>
             <div className="absolute -bottom-10 -right-10 w-40 h-40 bg-[#16A34A]/20 rounded-full blur-3xl"></div>
-
             <div className="relative rounded-3xl overflow-hidden shadow-2xl border-4 border-white transform hover:scale-[1.02] transition duration-500">
               <img src={farmImg} alt="Fresh Farm" className="w-full h-[500px] object-contain" />
-
               <div className="absolute bottom-8 left-8 bg-white/90 dark:bg-slate-800/90 backdrop-blur-xl p-4 rounded-xl shadow-lg flex items-center gap-4 animate-floating">
                 <div className="bg-[#ECFDF3] p-3 rounded-full text-[#16A34A]">
                   <MdVerified size={28} />
@@ -66,11 +63,6 @@ export default function About() {
               We built a hyper-local logistics network that ensures vegetables harvested at dawn
               reach your doorstep by breakfast.
             </p>
-            <p className="text-lg text-[#14532D]/70 dark:text-green-100/70 mb-8 leading-relaxed">
-              By cutting out middlemen, we ensure farmers get fair prices and you get produce
-              that hasn't spent weeks in cold storage.
-            </p>
-
             <div className="grid grid-cols-2 gap-6">
               <div className="border-l-4 border-[#16A34A] pl-4">
                 <div className="text-3xl font-bold text-[#14532D] dark:text-green-100">10k+</div>
@@ -82,10 +74,10 @@ export default function About() {
               </div>
             </div>
           </div>
-
         </div>
       </section>
 
+      {/* Values Section */}
       <section className="py-20 bg-[#ECFDF3] dark:bg-slate-800 transition-colors duration-300">
         <div className="max-w-7xl mx-auto px-6">
           <div className="text-center mb-16">
@@ -125,35 +117,42 @@ export default function About() {
         </div>
       </section>
 
+      {/* Streamlined Leadership Section */}
       <section className="py-20 max-w-7xl mx-auto px-6">
-        <h2 className="text-4xl font-bold text-center mb-16 text-[#14532D] dark:text-green-100">Meet the Visionaries</h2>
+        <div className="text-center mb-16">
+          <h2 className="text-4xl font-bold text-[#14532D] dark:text-green-100">Our Leadership</h2>
+          <p className="mt-3 text-lg text-[#14532D]/70 dark:text-green-100/70">The minds behind the mission.</p>
+        </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-12">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           {[
-            { name: "Pankaj Kumar", role: "CEO & Co-Founder", img: team1 },
-            { name: "Tanvi Leader", role: "Head of Operations", img: team2 },
-            { name: "Hardik", role: "Chief Technology Officer", img: team3 },
+            { name: "Pankaj Kumar", role: "CEO & Co-Founder" },
+            { name: "Tanvi Leader", role: "Head of Operations" },
+            { name: "Hardik", role: "Chief Technology Officer" },
           ].map((member, i) => (
-            <div key={i} className="group text-center fade-up" style={{ animationDelay: `${i * 150}ms` }}>
-              <div className="relative mb-6 inline-block">
-                <div className="absolute inset-0 bg-[#16A34A] rounded-full blur opacity-0 group-hover:opacity-30 transition duration-500"></div>
-                <img
-                  src={member.img}
-                  alt={member.name}
-                  className="w-48 h-48 rounded-full object-cover border-4 border-[#F0FDF4] shadow-xl relative z-10 group-hover:scale-105 transition duration-300"
-                />
+            <div 
+              key={i} 
+              className="group bg-white dark:bg-slate-900 p-8 rounded-2xl border border-[#16A34A]/10 shadow-sm hover:shadow-xl hover:border-[#16A34A]/30 transition-all duration-300 text-center fade-up"
+              style={{ animationDelay: `${i * 150}ms` }}
+            >
+              <div className="inline-flex items-center justify-center w-14 h-14 rounded-full bg-[#F0FDF4] dark:bg-slate-800 text-[#16A34A] mb-4 group-hover:scale-110 transition-transform duration-300">
+                <FaUserTie size={24} />
               </div>
-              <h3 className="text-2xl font-bold text-[#14532D] dark:text-green-100">{member.name}</h3>
-              <p className="text-[#16A34A] font-medium mt-1">{member.role}</p>
+              <h3 className="text-2xl font-bold text-[#14532D] dark:text-green-100 group-hover:text-[#16A34A] transition-colors">
+                {member.name}
+              </h3>
+              <p className="text-[#16A34A] font-medium tracking-wide uppercase text-xs mt-2 opacity-80">
+                {member.role}
+              </p>
             </div>
           ))}
         </div>
       </section>
 
+      {/* CTA Section */}
       <section className="py-20 bg-[#16A34A] text-white text-center relative overflow-hidden">
         <div className="absolute top-0 left-0 w-64 h-64 bg-white/10 rounded-full blur-3xl -translate-x-1/2 -translate-y-1/2"></div>
         <div className="absolute bottom-0 right-0 w-64 h-64 bg-white/10 rounded-full blur-3xl translate-x-1/2 translate-y-1/2"></div>
-
         <div className="relative z-10 max-w-3xl mx-auto px-6">
           <h2 className="text-4xl lg:text-5xl font-extrabold mb-6">Ready to experience the future of grocery?</h2>
           <p className="text-lg text-white/90 mb-8">Join thousands of happy customers in your city today.</p>
@@ -164,6 +163,7 @@ export default function About() {
           </Link>
         </div>
       </section>
+
       <style>{`
         @keyframes floating {
           0%,100% { transform: translateY(0); }
