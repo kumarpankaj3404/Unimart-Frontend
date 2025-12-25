@@ -1,6 +1,6 @@
 import React, { useEffect } from "react";
-import Navbar from "./Navbar"; 
-// FIXED: Removed the space in FaUserTie
+import Navbar from "./Navbar";
+import Background3D from "../Components/Background3D";
 import { FaLeaf, FaBolt, FaHeart, FaUserTie } from "react-icons/fa";
 import { MdVerified } from "react-icons/md";
 import { Link } from "react-router-dom";
@@ -14,36 +14,44 @@ export default function About() {
   }, []);
 
   return (
-    <div className="bg-[#F0FDF4] dark:bg-slate-950 text-[#14532D] dark:text-green-100 overflow-x-hidden selection:bg-[#22C55E] selection:text-white transition-colors duration-300">
+    <div className="relative min-h-screen text-[#14532D] dark:text-green-100 overflow-x-hidden selection:bg-[#22C55E] selection:text-white transition-colors duration-300">
+      <Background3D />
       <Navbar />
 
       {/* Hero Section */}
-      <section className="pt-32 pb-20 max-w-7xl mx-auto px-6 text-center">
+      <section className="pt-36 pb-20 max-w-7xl mx-auto px-6 text-center">
         <div className="fade-up">
-          <span className="bg-[#22C55E]/20 text-[#14532D] px-5 py-2 rounded-full text-sm font-bold uppercase tracking-wider">
+          <span className="inline-block bg-white/40 dark:bg-white/5 backdrop-blur-md border border-white/20 dark:border-white/10 text-[#14532D] dark:text-green-300 px-6 py-2 rounded-full text-sm font-bold uppercase tracking-wider shadow-sm">
             Our Story
           </span>
-          <h1 className="mt-8 text-5xl lg:text-7xl font-extrabold leading-tight text-[#14532D] dark:text-green-100">
+          <h1 className="mt-8 text-5xl lg:text-7xl font-extrabold leading-tight drop-shadow-sm">
             Redefining freshness, <br />
-            <span className="text-[#16A34A]">one delivery at a time.</span>
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#16A34A] to-emerald-400">
+              one delivery at a time.
+            </span>
           </h1>
-          <p className="mt-6 text-[#14532D]/80 dark:text-green-100/80 max-w-2xl mx-auto text-xl leading-relaxed">
+          <p className="mt-6 text-[#14532D]/90 dark:text-green-100/80 max-w-2xl mx-auto text-xl leading-relaxed font-medium">
             UniMart started with a simple mission: to bridge the gap between local farmers
             and your kitchen table, without compromising on speed or quality.
           </p>
         </div>
       </section>
 
-      {/* Trust Section */}
-      <section className="py-16 bg-white dark:bg-slate-900 transition-colors duration-300">
+      {/* Trust Section - Glass Container */}
+      <section className="py-20 bg-white/30 dark:bg-slate-900/30 backdrop-blur-lg border-y border-white/20 dark:border-white/5">
         <div className="max-w-7xl mx-auto px-6 grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
+
           <div className="relative fade-up">
-            <div className="absolute top-10 -left-10 w-32 h-32 bg-[#22C55E]/30 rounded-full blur-3xl"></div>
+            {/* Background Glows */}
+            <div className="absolute top-10 -left-10 w-32 h-32 bg-[#22C55E]/20 rounded-full blur-3xl"></div>
             <div className="absolute -bottom-10 -right-10 w-40 h-40 bg-[#16A34A]/20 rounded-full blur-3xl"></div>
-            <div className="relative rounded-3xl overflow-hidden shadow-2xl border-4 border-white transform hover:scale-[1.02] transition duration-500">
-              <img src={farmImg} alt="Fresh Farm" className="w-full h-[500px] object-contain" />
-              <div className="absolute bottom-8 left-8 bg-white/90 dark:bg-slate-800/90 backdrop-blur-xl p-4 rounded-xl shadow-lg flex items-center gap-4 animate-floating">
-                <div className="bg-[#ECFDF3] p-3 rounded-full text-[#16A34A]">
+
+            <div className="relative rounded-3xl overflow-hidden shadow-2xl border-4 border-white/30 dark:border-white/10 transform hover:scale-[1.02] transition duration-500">
+              <img src={farmImg} alt="Fresh Farm" className="w-full h-[500px] object-cover" />
+
+              {/* Floating Glass Badge */}
+              <div className="absolute bottom-8 left-8 bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl p-4 rounded-2xl shadow-lg border border-white/40 dark:border-white/10 flex items-center gap-4 animate-floating">
+                <div className="bg-[#ECFDF3] dark:bg-slate-800 p-3 rounded-full text-[#16A34A]">
                   <MdVerified size={28} />
                 </div>
                 <div>
@@ -55,22 +63,22 @@ export default function About() {
           </div>
 
           <div className="fade-up delay-200">
-            <h2 className="text-4xl font-bold mb-6 leading-snug text-[#14532D] dark:text-green-100">
+            <h2 className="text-4xl font-bold mb-6 leading-snug drop-shadow-sm">
               We deliver more than just groceries. We deliver <span className="text-[#16A34A]">trust.</span>
             </h2>
-            <p className="text-lg text-[#14532D]/70 dark:text-green-100/70 mb-6 leading-relaxed">
+            <p className="text-lg text-[#14532D]/80 dark:text-green-100/80 mb-8 leading-relaxed font-medium">
               In a world of instant gratification, quality often takes a backseat. Not at UniMart.
               We built a hyper-local logistics network that ensures vegetables harvested at dawn
               reach your doorstep by breakfast.
             </p>
             <div className="grid grid-cols-2 gap-6">
-              <div className="border-l-4 border-[#16A34A] pl-4">
+              <div className="border-l-4 border-[#16A34A] pl-6 py-1 bg-white/20 dark:bg-white/5 rounded-r-xl backdrop-blur-sm">
                 <div className="text-3xl font-bold text-[#14532D] dark:text-green-100">10k+</div>
-                <div className="text-sm text-[#14532D]/60 dark:text-green-100/60">Happy Families</div>
+                <div className="text-sm text-[#14532D]/70 dark:text-green-100/70 font-semibold">Happy Families</div>
               </div>
-              <div className="border-l-4 border-[#16A34A] pl-4">
+              <div className="border-l-4 border-[#16A34A] pl-6 py-1 bg-white/20 dark:bg-white/5 rounded-r-xl backdrop-blur-sm">
                 <div className="text-3xl font-bold text-[#14532D] dark:text-green-100">30min</div>
-                <div className="text-sm text-[#14532D]/60 dark:text-green-100/60">Avg. Delivery</div>
+                <div className="text-sm text-[#14532D]/70 dark:text-green-100/70 font-semibold">Avg. Delivery</div>
               </div>
             </div>
           </div>
@@ -78,50 +86,48 @@ export default function About() {
       </section>
 
       {/* Values Section */}
-      <section className="py-20 bg-[#ECFDF3] dark:bg-slate-800 transition-colors duration-300">
-        <div className="max-w-7xl mx-auto px-6">
-          <div className="text-center mb-16">
-            <h2 className="text-4xl font-bold text-[#14532D] dark:text-green-100">What drives us?</h2>
-            <p className="mt-3 text-lg text-[#14532D]/70 dark:text-green-100/70">Our core values that shape every delivery.</p>
-          </div>
+      <section className="py-24 max-w-7xl mx-auto px-6">
+        <div className="text-center mb-16">
+          <h2 className="text-4xl font-bold text-[#14532D] dark:text-green-100 drop-shadow-sm">What drives us?</h2>
+          <p className="mt-3 text-lg text-[#14532D]/80 dark:text-green-100/80 font-medium">Our core values that shape every delivery.</p>
+        </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-10">
-            {[
-              {
-                icon: FaBolt,
-                title: "Lightning Fast",
-                desc: "Time is precious. We optimize every route to ensure your order arrives in minutes, not hours."
-              },
-              {
-                icon: FaLeaf,
-                title: "Sustainability First",
-                desc: "We use electric vehicles for 80% of our fleet and plastic-free packaging for fresh produce."
-              },
-              {
-                icon: FaHeart,
-                title: "Customer Obsession",
-                desc: "From the moment you click 'Order' to the knock on your door, your experience is our priority."
-              }
-            ].map((item, i) => (
-              <div key={i} className="bg-white dark:bg-slate-900 p-8 rounded-2xl shadow-lg hover:shadow-2xl hover:-translate-y-2 transition duration-300 fade-up" style={{ animationDelay: `${i * 100}ms` }}>
-                <div className="w-16 h-16 bg-[#F0FDF4] dark:bg-slate-800 rounded-full flex items-center justify-center text-[#16A34A] text-2xl mb-6">
-                  <item.icon />
-                </div>
-                <h3 className="text-2xl font-bold mb-3 text-[#14532D] dark:text-green-100">{item.title}</h3>
-                <p className="text-[#14532D]/70 dark:text-green-100/70 leading-relaxed">
-                  {item.desc}
-                </p>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-10">
+          {[
+            {
+              icon: FaBolt,
+              title: "Lightning Fast",
+              desc: "Time is precious. We optimize every route to ensure your order arrives in minutes, not hours."
+            },
+            {
+              icon: FaLeaf,
+              title: "Sustainability First",
+              desc: "We use electric vehicles for 80% of our fleet and plastic-free packaging for fresh produce."
+            },
+            {
+              icon: FaHeart,
+              title: "Customer Obsession",
+              desc: "From the moment you click 'Order' to the knock on your door, your experience is our priority."
+            }
+          ].map((item, i) => (
+            <div key={i} className="bg-white/40 dark:bg-slate-900/40 backdrop-blur-md border border-white/30 dark:border-white/10 p-8 rounded-3xl shadow-lg hover:bg-white/50 dark:hover:bg-slate-900/50 hover:shadow-xl hover:-translate-y-2 transition-all duration-300 fade-up" style={{ animationDelay: `${i * 100}ms` }}>
+              <div className="w-16 h-16 bg-white/60 dark:bg-slate-800/60 rounded-2xl flex items-center justify-center text-[#16A34A] text-2xl mb-6 shadow-sm border border-white/20">
+                <item.icon />
               </div>
-            ))}
-          </div>
+              <h3 className="text-2xl font-bold mb-3 text-[#14532D] dark:text-green-100">{item.title}</h3>
+              <p className="text-[#14532D]/80 dark:text-green-100/70 leading-relaxed font-medium">
+                {item.desc}
+              </p>
+            </div>
+          ))}
         </div>
       </section>
 
-      {/* Streamlined Leadership Section */}
-      <section className="py-20 max-w-7xl mx-auto px-6">
+      {/* Leadership Section */}
+      <section className="py-20 max-w-7xl mx-auto px-6 border-t border-white/20 dark:border-white/5">
         <div className="text-center mb-16">
-          <h2 className="text-4xl font-bold text-[#14532D] dark:text-green-100">Our Leadership</h2>
-          <p className="mt-3 text-lg text-[#14532D]/70 dark:text-green-100/70">The minds behind the mission.</p>
+          <h2 className="text-4xl font-bold text-[#14532D] dark:text-green-100 drop-shadow-sm">Our Leadership</h2>
+          <p className="mt-3 text-lg text-[#14532D]/80 dark:text-green-100/80 font-medium">The minds behind the mission.</p>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
@@ -130,18 +136,18 @@ export default function About() {
             { name: "Tanvi Leader", role: "Head of Operations" },
             { name: "Hardik", role: "Chief Technology Officer" },
           ].map((member, i) => (
-            <div 
-              key={i} 
-              className="group bg-white dark:bg-slate-900 p-8 rounded-2xl border border-[#16A34A]/10 shadow-sm hover:shadow-xl hover:border-[#16A34A]/30 transition-all duration-300 text-center fade-up"
+            <div
+              key={i}
+              className="group bg-white/30 dark:bg-slate-900/30 backdrop-blur-md p-8 rounded-3xl border border-white/30 dark:border-white/10 shadow-sm hover:shadow-xl hover:bg-white/40 dark:hover:bg-slate-900/50 transition-all duration-300 text-center fade-up cursor-default"
               style={{ animationDelay: `${i * 150}ms` }}
             >
-              <div className="inline-flex items-center justify-center w-14 h-14 rounded-full bg-[#F0FDF4] dark:bg-slate-800 text-[#16A34A] mb-4 group-hover:scale-110 transition-transform duration-300">
-                <FaUserTie size={24} />
+              <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-gradient-to-br from-[#F0FDF4] to-white dark:from-slate-800 dark:to-slate-700 text-[#16A34A] mb-6 shadow-md group-hover:scale-110 transition-transform duration-300 border border-white/20">
+                <FaUserTie size={32} />
               </div>
               <h3 className="text-2xl font-bold text-[#14532D] dark:text-green-100 group-hover:text-[#16A34A] transition-colors">
                 {member.name}
               </h3>
-              <p className="text-[#16A34A] font-medium tracking-wide uppercase text-xs mt-2 opacity-80">
+              <p className="text-[#16A34A] font-bold tracking-wide uppercase text-xs mt-2 opacity-90">
                 {member.role}
               </p>
             </div>
@@ -149,15 +155,23 @@ export default function About() {
         </div>
       </section>
 
-      {/* CTA Section */}
-      <section className="py-20 bg-[#16A34A] text-white text-center relative overflow-hidden">
-        <div className="absolute top-0 left-0 w-64 h-64 bg-white/10 rounded-full blur-3xl -translate-x-1/2 -translate-y-1/2"></div>
-        <div className="absolute bottom-0 right-0 w-64 h-64 bg-white/10 rounded-full blur-3xl translate-x-1/2 translate-y-1/2"></div>
-        <div className="relative z-10 max-w-3xl mx-auto px-6">
-          <h2 className="text-4xl lg:text-5xl font-extrabold mb-6">Ready to experience the future of grocery?</h2>
-          <p className="text-lg text-white/90 mb-8">Join thousands of happy customers in your city today.</p>
+      {/* CTA Section - Glass Gradient */}
+      <section className="py-20 relative overflow-hidden mt-10">
+        <div className="absolute inset-0 bg-[#16A34A]/90 dark:bg-[#16A34A]/80 backdrop-blur-xl z-0"></div>
+
+        {/* Decorative background blobs */}
+        <div className="absolute top-0 left-0 w-64 h-64 bg-white/20 rounded-full blur-3xl -translate-x-1/2 -translate-y-1/2 z-0"></div>
+        <div className="absolute bottom-0 right-0 w-64 h-64 bg-black/10 rounded-full blur-3xl translate-x-1/2 translate-y-1/2 z-0"></div>
+
+        <div className="relative z-10 max-w-3xl mx-auto px-6 text-center">
+          <h2 className="text-4xl lg:text-5xl font-extrabold mb-6 text-white drop-shadow-md">
+            Ready to experience the future of grocery?
+          </h2>
+          <p className="text-lg text-white/90 mb-10 font-medium">
+            Join thousands of happy customers in your city today.
+          </p>
           <Link to="/items">
-            <button className="bg-white text-[#16A34A] px-10 py-4 rounded-xl text-xl font-bold shadow-lg hover:bg-gray-100 transition hover:scale-105">
+            <button className="bg-white text-[#16A34A] px-12 py-5 rounded-2xl text-xl font-bold shadow-2xl hover:bg-gray-50 transition-all hover:scale-105 active:scale-95">
               Start Shopping
             </button>
           </Link>

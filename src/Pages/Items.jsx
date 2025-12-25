@@ -1,6 +1,7 @@
 import React, { useEffect, useState, useMemo } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
+import Background3D from "../Components/Background3D";
 import { FaSearch, FaChevronLeft, FaChevronRight, FaHeart, FaRegHeart } from "react-icons/fa";
 import { FiMinus, FiPlus, FiX, FiShoppingBag, FiTrash2, FiMapPin, FiCheckCircle } from "react-icons/fi";
 
@@ -13,6 +14,7 @@ import api from "../utils/api";
 import { placeOrder, resetOrderSuccess } from "../redux/orderSlice";
 import { updateUserFavorites } from "../redux/authSlice";
 
+// Images
 import Apple from "../items/Apples.png";
 import Banana from "../items/Banana.png";
 import straw from "../items/Strawberry.png";
@@ -61,10 +63,8 @@ export default function Items() {
   const [qtyMap, setQtyMap] = useState(() => JSON.parse(localStorage.getItem("qtyMap")) || {});
   const [cartOpen, setCartOpen] = useState(false);
 
-
   useEffect(() => localStorage.setItem("cart", JSON.stringify(cart)), [cart]);
   useEffect(() => localStorage.setItem("qtyMap", JSON.stringify(qtyMap)), [qtyMap]);
-
 
   const { totalItems, totalPrice, finalTotal } = useMemo(() => {
     const totalItems = cart.reduce((s, p) => s + (p.qty || 0), 0);
@@ -105,7 +105,6 @@ export default function Items() {
     }
   };
 
-
   const handleCheckoutClick = () => {
     setCartOpen(false);
     if (currentUser?.address && currentUser.address.length > 0) {
@@ -137,7 +136,7 @@ export default function Items() {
       })),
       totalAmount: finalTotal,
       payment: "cod",
-      address: finalAddressObj.fullAddress, // Sending String as required by backend
+      address: finalAddressObj.fullAddress,
       lat: finalAddressObj.lat,
       lng: finalAddressObj.lng
     };
@@ -156,6 +155,7 @@ export default function Items() {
     }
   }, [orderSuccess, dispatch]);
 
+  // Data
   const categories = {
     Fruits: [
       { id: "apple", name: "Fresh Red Apples", price: 79, img: Apple, weight: "1kg" },
@@ -228,20 +228,35 @@ export default function Items() {
   const handleMinus = (id) => changeQty(id, getQty(id) - 1);
 
   return (
-    <div className="min-h-screen bg-[#F0FDF4] dark:bg-slate-950 text-[#14532D] dark:text-green-100 font-sans pb-24 selection:bg-[#22C55E] selection:text-white transition-colors duration-300">
+    <div className="min-h-screen bg-transparent text-[#14532D] dark:text-green-100 font-sans pb-24 selection:bg-[#22C55E] selection:text-white transition-colors duration-300">
+      <Background3D />
       <Navbar />
 
       <div className="pt-28 max-w-7xl mx-auto px-4 sm:px-6 fade-up">
-        <div className=" top-20 z-30 bg-[#F0FDF4]/95 dark:bg-slate-950/95 backdrop-blur-xl py-4 -mx-4 px-4 sm:mx-0 sm:px-0 transition-all duration-300">
+        {/* Glass Sticky Search Header */}
+        <div className=" z-30 bg-white/10 dark:bg-black/20 backdrop-blur-xl border-b border-white/20 dark:border-white/5 py-4 -mx-4 px-4 sm:mx-0 sm:px-4 sm:rounded-2xl transition-all duration-300">
           <div className="relative max-w-2xl mx-auto group">
             <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
               <FaSearch className="text-[#16A34A] group-focus-within:text-[#14532D] transition-colors" />
             </div>
-            <input type="text" placeholder="Search for bread, milk, eggs..." className="w-full py-4 pl-12 pr-4 rounded-2xl bg-white dark:bg-slate-900 border border-[#22C55E]/20 dark:border-green-500/20 outline-none text-[#14532D] dark:text-green-100 shadow-sm focus:shadow-lg focus:border-[#16A34A] placeholder:text-gray-400 dark:placeholder:text-gray-600" value={search} onChange={(e) => setSearch(e.target.value)} />
+            {/* Glass Input */}
+            <input
+              type="text"
+              placeholder="Search for bread, milk, eggs..."
+              className="w-full py-4 pl-12 pr-4 rounded-2xl bg-white/40 dark:bg-slate-900/40 border border-white/30 dark:border-white/10 outline-none text-[#14532D] dark:text-green-100 shadow-sm focus:shadow-lg focus:border-[#16A34A]/50 focus:bg-white/60 dark:focus:bg-slate-900/60 placeholder:text-gray-500 dark:placeholder:text-gray-400 backdrop-blur-md transition-all"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+            />
           </div>
           <div className="mt-6 flex gap-3 overflow-x-auto pb-2 scrollbar-hide">
             {allCategories.map((cat) => (
-              <button key={cat} onClick={() => setActiveCategory(cat)} className={`whitespace-nowrap px-6 py-2.5 rounded-full text-sm font-bold transition-all duration-300 active:scale-95 ${activeCategory === cat ? "bg-[#16A34A] text-white shadow-lg" : "bg-white dark:bg-slate-900 text-[#14532D]/70 dark:text-green-100/70 border border-[#22C55E]/20 dark:border-green-500/20"}`}>{cat}</button>
+              <button
+                key={cat}
+                onClick={() => setActiveCategory(cat)}
+                className={`whitespace-nowrap px-6 py-2.5 rounded-full text-sm font-bold transition-all duration-300 active:scale-95 backdrop-blur-sm border ${activeCategory === cat ? "bg-[#16A34A] text-white shadow-lg border-transparent" : "bg-white/30 dark:bg-slate-900/30 text-[#14532D]/80 dark:text-green-100/80 border-white/20 hover:bg-white/50 dark:hover:bg-slate-800/50"}`}
+              >
+                {cat}
+              </button>
             ))}
           </div>
         </div>
@@ -261,19 +276,21 @@ export default function Items() {
         )}
       </div>
 
-
+      {/* Glass Bottom Cart Bar */}
       <div className={`fixed bottom-8 left-4 right-4 sm:left-auto sm:right-8 sm:w-96 transition-all duration-500 transform z-40 ${totalItems > 0 ? "translate-y-0 opacity-100" : "translate-y-32 opacity-0"}`}>
-        <button onClick={() => setCartOpen(true)} className="w-full bg-[#14532D] text-white p-4 rounded-2xl shadow-xl flex items-center justify-between hover:scale-[1.02] transition-transform">
+        <button onClick={() => setCartOpen(true)} className="w-full bg-[#14532D]/90 backdrop-blur-md text-white p-4 rounded-2xl shadow-2xl border border-white/10 flex items-center justify-between hover:scale-[1.02] transition-transform">
           <div className="flex flex-col items-start pl-2">
             <span className="text-[10px] font-bold text-[#22C55E] uppercase tracking-wider mb-0.5">{totalItems} ITEMS</span>
             <span className="text-xl font-bold">₹{totalPrice}</span>
           </div>
-          <div className="flex items-center gap-3 pr-2"><span className="font-semibold text-sm">View Cart</span><div className="bg-white/10 p-2 rounded-lg"><FiShoppingBag className="text-xl" /></div></div>
+          <div className="flex items-center gap-3 pr-2">
+            <span className="font-semibold text-sm">View Cart</span>
+            <div className="bg-white/10 p-2 rounded-lg"><FiShoppingBag className="text-xl" /></div>
+          </div>
         </button>
       </div>
 
       <CartDrawer cart={cart} changeQty={changeQty} cartOpen={cartOpen} setCartOpen={setCartOpen} onCheckout={handleCheckoutClick} totalPrice={totalPrice} finalTotal={finalTotal} />
-
 
       <AddressSelectionModal
         open={addressSelectionOpen}
@@ -301,7 +318,6 @@ export default function Items() {
         initialData={currentUser}
       />
 
-
       <OrderSummaryModal
         open={summaryOpen}
         address={selectedAddress}
@@ -323,17 +339,17 @@ export default function Items() {
   );
 }
 
-
 function AddressSelectionModal({ open, onClose, addresses, onSelect, onAddNew }) {
   if (!open) return null;
 
   return (
     <>
       <div className="fixed inset-0 bg-black/40 backdrop-blur-sm z-50 transition-opacity" onClick={onClose} />
-      <div className="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[90%] max-w-md bg-white dark:bg-slate-900 rounded-3xl p-6 shadow-2xl z-50 animate-spring-enter border border-gray-100 dark:border-slate-800">
+      {/* Glass Modal */}
+      <div className="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[90%] max-w-md bg-white/80 dark:bg-slate-900/80 backdrop-blur-2xl rounded-3xl p-6 shadow-2xl z-50 animate-spring-enter border border-white/20">
         <div className="flex justify-between items-center mb-6">
           <h2 className="text-2xl font-bold text-[#14532D] dark:text-green-100">Select Address</h2>
-          <button onClick={onClose} className="p-2 hover:bg-gray-100 rounded-full text-gray-400 hover:text-gray-600 transition"><FiX size={24} /></button>
+          <button onClick={onClose} className="p-2 hover:bg-white/20 rounded-full text-gray-500 hover:text-gray-700 transition"><FiX size={24} /></button>
         </div>
 
         <div className="max-h-[60vh] overflow-y-auto space-y-3 mb-6 pr-2">
@@ -341,9 +357,9 @@ function AddressSelectionModal({ open, onClose, addresses, onSelect, onAddNew })
             <button
               key={addr._id || idx}
               onClick={() => onSelect(addr)}
-              className="w-full text-left p-4 rounded-xl border border-gray-200 dark:border-slate-700 hover:border-[#16A34A] dark:hover:border-green-500 hover:bg-[#F0FDF4] dark:hover:bg-slate-800 transition-all group relative flex items-start gap-4"
+              className="w-full text-left p-4 rounded-xl border border-gray-200/50 dark:border-slate-700/50 hover:border-[#16A34A] dark:hover:border-green-500 bg-white/40 dark:bg-slate-800/40 hover:bg-[#F0FDF4]/60 dark:hover:bg-slate-800/60 transition-all group relative flex items-start gap-4"
             >
-              <div className="mt-1 w-6 h-6 rounded-full border-2 border-gray-300 group-hover:border-[#16A34A] flex items-center justify-center">
+              <div className="mt-1 w-6 h-6 rounded-full border-2 border-gray-400/50 group-hover:border-[#16A34A] flex items-center justify-center">
                 <div className="w-2.5 h-2.5 rounded-full bg-[#16A34A] opacity-0 group-hover:opacity-100 transition-opacity" />
               </div>
               <div>
@@ -358,7 +374,7 @@ function AddressSelectionModal({ open, onClose, addresses, onSelect, onAddNew })
 
         <button
           onClick={onAddNew}
-          className="w-full py-4 border-2 border-dashed border-[#16A34A]/30 rounded-xl flex items-center justify-center gap-2 text-[#16A34A] font-bold hover:bg-[#F0FDF4] dark:hover:bg-slate-800 hover:border-[#16A34A] transition-all"
+          className="w-full py-4 border-2 border-dashed border-[#16A34A]/30 rounded-xl flex items-center justify-center gap-2 text-[#16A34A] font-bold hover:bg-[#F0FDF4]/50 hover:border-[#16A34A] transition-all backdrop-blur-sm"
         >
           <FiPlus size={20} /> Add New Address
         </button>
@@ -371,10 +387,10 @@ function CategoryRow({ title, items, index, scroll, addToCartOnCard, getQty, han
   return (
     <div className="relative fade-up" style={{ animationDelay: `${index * 100}ms` }}>
       <div className="flex justify-between items-end mb-5 px-1">
-        <h2 className="text-2xl font-bold text-[#14532D] dark:text-green-100">{title}</h2>
+        <h2 className="text-2xl font-bold text-[#14532D] dark:text-green-100 drop-shadow-sm">{title}</h2>
         <div className="flex gap-2">
-          <button onClick={() => scroll(-300)} className="w-9 h-9 rounded-full bg-white dark:bg-slate-800 border border-[#22C55E]/20 dark:border-green-500/20 flex items-center justify-center text-[#16A34A] hover:bg-[#22C55E] hover:text-white transition-all shadow-sm"><FaChevronLeft size={12} /></button>
-          <button onClick={() => scroll(300)} className="w-9 h-9 rounded-full bg-white dark:bg-slate-800 border border-[#22C55E]/20 dark:border-green-500/20 flex items-center justify-center text-[#16A34A] hover:bg-[#22C55E] hover:text-white transition-all shadow-sm"><FaChevronRight size={12} /></button>
+          <button onClick={() => scroll(-300)} className="w-9 h-9 rounded-full bg-white/50 dark:bg-slate-800/50 backdrop-blur-sm border border-[#22C55E]/20 hover:bg-[#22C55E] hover:text-white transition-all shadow-sm flex items-center justify-center text-[#16A34A]"><FaChevronLeft size={12} /></button>
+          <button onClick={() => scroll(300)} className="w-9 h-9 rounded-full bg-white/50 dark:bg-slate-800/50 backdrop-blur-sm border border-[#22C55E]/20 hover:bg-[#22C55E] hover:text-white transition-all shadow-sm flex items-center justify-center text-[#16A34A]"><FaChevronRight size={12} /></button>
         </div>
       </div>
       <div id={`row-${index}`} className="flex gap-5 overflow-x-auto scrollbar-hide pb-4 px-1 snap-x">
@@ -386,16 +402,29 @@ function CategoryRow({ title, items, index, scroll, addToCartOnCard, getQty, han
 
 function ProductCard({ item, addToCartOnCard, qty, handlePlus, handleMinus, toggleWishlist, wished, index = 0 }) {
   return (
-    <div className="bg-white dark:bg-slate-900 rounded-2xl border border-[#22C55E]/10 dark:border-green-500/10 overflow-hidden flex flex-col h-full hover:shadow-xl hover:-translate-y-2 transition-all duration-300 group relative" style={{ animationDelay: `${index * 50}ms` }}>
-      <button onClick={(e) => { e.stopPropagation(); toggleWishlist(item); }} className="absolute top-3 right-3 z-10 w-9 h-9 rounded-full bg-white/60 backdrop-blur-sm flex items-center justify-center text-gray-400 hover:text-red-500 hover:bg-red-50 transition-all shadow-sm opacity-0 group-hover:opacity-100 transform translate-y-2 group-hover:translate-y-0 duration-300">{wished ? <FaHeart className="text-red-500" /> : <FaRegHeart />}</button>
-      <div className="relative h-44 p-6 flex items-center justify-center bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-[#F0FDF4] to-white dark:from-slate-800 dark:to-slate-900"><img src={item.img} alt={item.name} className="w-full h-full object-contain group-hover:scale-110 transition-transform duration-500 ease-out drop-shadow-sm" /></div>
-      <div className="p-4 flex flex-col flex-1 border-t border-[#F0FDF4] dark:border-slate-800">
-        <div className="flex-1"><h3 className="font-bold text-[#14532D] dark:text-green-100 text-base leading-tight mb-1">{item.name}</h3><p className="text-xs font-medium text-[#16A34A]/80 dark:text-green-400/80">{item.weight || "1 unit"}</p></div>
+    // Glass Card
+    <div className="bg-white/40 dark:bg-slate-900/40 backdrop-blur-lg rounded-2xl border border-white/30 dark:border-white/10 overflow-hidden flex flex-col h-full hover:shadow-xl hover:shadow-[#16A34A]/10 hover:-translate-y-2 transition-all duration-300 group relative" style={{ animationDelay: `${index * 50}ms` }}>
+      <button onClick={(e) => { e.stopPropagation(); toggleWishlist(item); }} className="absolute top-3 right-3 z-10 w-9 h-9 rounded-full bg-white/70 backdrop-blur-md flex items-center justify-center text-gray-400 hover:text-red-500 hover:bg-red-50 transition-all shadow-sm opacity-0 group-hover:opacity-100 transform translate-y-2 group-hover:translate-y-0 duration-300">{wished ? <FaHeart className="text-red-500" /> : <FaRegHeart />}</button>
+
+      {/* Semi-transparent gradient for image bg to let 3D bits show through slightly */}
+      <div className="relative h-44 p-6 flex items-center justify-center bg-gradient-to-b from-[#F0FDF4]/30 to-transparent dark:from-slate-800/30 dark:to-transparent">
+        <img src={item.img} alt={item.name} className="w-full h-full object-contain group-hover:scale-110 transition-transform duration-500 ease-out drop-shadow-md" />
+      </div>
+
+      <div className="p-4 flex flex-col flex-1 border-t border-white/20 dark:border-white/5 bg-white/20 dark:bg-slate-900/20">
+        <div className="flex-1">
+          <h3 className="font-bold text-[#14532D] dark:text-green-100 text-base leading-tight mb-1">{item.name}</h3>
+          <p className="text-xs font-medium text-[#16A34A]/80 dark:text-green-400/80">{item.weight || "1 unit"}</p>
+        </div>
         <div className="mt-4 flex items-center justify-between">
           <span className="text-lg font-bold text-[#14532D] dark:text-green-100">₹{item.price}</span>
           {qty > 0 ? (
-            <div className="flex items-center h-9 bg-[#F0FDF4] dark:bg-slate-800 rounded-lg border border-[#22C55E]/20 dark:border-green-500/20 overflow-hidden shadow-inner"><button onClick={handleMinus} className="w-9 h-full flex items-center justify-center text-[#16A34A] hover:bg-[#22C55E]/10 transition"><FiMinus size={14} /></button><span className="w-6 text-center text-sm font-bold text-[#14532D] dark:text-green-100">{qty}</span><button onClick={handlePlus} className="w-9 h-full flex items-center justify-center text-[#16A34A] hover:bg-[#22C55E]/10 transition"><FiPlus size={14} /></button></div>
-          ) : <button onClick={() => addToCartOnCard(item)} className="px-5 py-2 rounded-xl border border-[#16A34A] text-[#16A34A] text-sm font-bold hover:bg-[#16A34A] hover:text-white transition-all duration-300 shadow-sm hover:shadow-lg hover:shadow-[#16A34A]/30 active:scale-95">Add</button>}
+            <div className="flex items-center h-9 bg-white/50 dark:bg-slate-800/50 rounded-lg border border-[#22C55E]/30 overflow-hidden shadow-sm backdrop-blur-sm">
+              <button onClick={handleMinus} className="w-9 h-full flex items-center justify-center text-[#16A34A] hover:bg-[#22C55E]/20 transition"><FiMinus size={14} /></button>
+              <span className="w-6 text-center text-sm font-bold text-[#14532D] dark:text-green-100">{qty}</span>
+              <button onClick={handlePlus} className="w-9 h-full flex items-center justify-center text-[#16A34A] hover:bg-[#22C55E]/20 transition"><FiPlus size={14} /></button>
+            </div>
+          ) : <button onClick={() => addToCartOnCard(item)} className="px-5 py-2 rounded-xl border border-[#16A34A]/50 bg-[#16A34A]/5 text-[#16A34A] text-sm font-bold hover:bg-[#16A34A] hover:text-white transition-all duration-300 shadow-sm hover:shadow-lg hover:shadow-[#16A34A]/30 active:scale-95 backdrop-blur-sm">Add</button>}
         </div>
       </div>
     </div>
@@ -407,26 +436,29 @@ function CartDrawer({ cart, changeQty, cartOpen, setCartOpen, onCheckout, totalP
   const platformFee = 5;
   return (
     <>
-      <div className={`fixed inset-0 bg-black/30 backdrop-blur-sm z-50 transition-opacity duration-300 ${cartOpen ? "opacity-100" : "opacity-0 pointer-events-none"}`} onClick={() => setCartOpen(false)} />
-      <div className={`fixed inset-y-0 right-0 z-50 w-full sm:w-[450px] bg-white dark:bg-slate-900 shadow-2xl transform transition-transform duration-500 cubic-bezier(0.16, 1, 0.3, 1) flex flex-col ${cartOpen ? "translate-x-0" : "translate-x-full"}`}>
-        <div className="flex items-center justify-between p-6 border-b border-[#F0FDF4] dark:border-slate-800 bg-white dark:bg-slate-900"><h2 className="text-xl font-bold text-[#14532D] dark:text-green-100 flex items-center gap-2">My Cart <span className="bg-[#F0FDF4] dark:bg-slate-800 text-[#16A34A] text-xs px-2 py-1 rounded-full">{cart.length}</span></h2><button onClick={() => setCartOpen(false)} className="p-2 hover:bg-[#F0FDF4] dark:hover:bg-slate-800 rounded-full text-[#14532D]/60 dark:text-green-100/60 transition"><FiX size={22} /></button></div>
-        <div className="flex-1 overflow-y-auto p-6 space-y-6 bg-white dark:bg-slate-900">
+      <div className={`fixed inset-0 bg-black/20 backdrop-blur-sm z-50 transition-opacity duration-300 ${cartOpen ? "opacity-100" : "opacity-0 pointer-events-none"}`} onClick={() => setCartOpen(false)} />
+      {/* Glass Cart Drawer */}
+      <div className={`fixed inset-y-0 right-0 z-50 w-full sm:w-[450px] bg-white/85 dark:bg-slate-900/85 backdrop-blur-2xl shadow-2xl transform transition-transform duration-500 cubic-bezier(0.16, 1, 0.3, 1) flex flex-col border-l border-white/20 ${cartOpen ? "translate-x-0" : "translate-x-full"}`}>
+        <div className="flex items-center justify-between p-6 border-b border-white/20 dark:border-white/5"><h2 className="text-xl font-bold text-[#14532D] dark:text-green-100 flex items-center gap-2">My Cart <span className="bg-[#16A34A]/10 text-[#16A34A] text-xs px-2 py-1 rounded-full border border-[#16A34A]/20">{cart.length}</span></h2><button onClick={() => setCartOpen(false)} className="p-2 hover:bg-white/30 rounded-full text-[#14532D]/60 dark:text-green-100/60 transition"><FiX size={22} /></button></div>
+
+        <div className="flex-1 overflow-y-auto p-6 space-y-6">
           {cart.length === 0 ? (
-            <div className="h-full flex flex-col items-center justify-center text-center opacity-60"><div className="w-20 h-20 bg-[#F0FDF4] dark:bg-slate-800 rounded-full flex items-center justify-center mb-4"><FiShoppingBag size={32} className="text-[#16A34A]" /></div><p className="font-bold text-[#14532D] dark:text-green-100 text-lg">Your cart is empty</p><button onClick={() => setCartOpen(false)} className="mt-6 px-8 py-3 bg-[#16A34A] text-white rounded-xl text-sm font-bold shadow-lg hover:shadow-xl transition">Start Shopping</button></div>
+            <div className="h-full flex flex-col items-center justify-center text-center opacity-60"><div className="w-20 h-20 bg-white/40 dark:bg-slate-800/40 rounded-full flex items-center justify-center mb-4"><FiShoppingBag size={32} className="text-[#16A34A]" /></div><p className="font-bold text-[#14532D] dark:text-green-100 text-lg">Your cart is empty</p><button onClick={() => setCartOpen(false)} className="mt-6 px-8 py-3 bg-[#16A34A] text-white rounded-xl text-sm font-bold shadow-lg hover:shadow-xl transition hover:scale-105">Start Shopping</button></div>
           ) : (
             <>
-              <div className="space-y-4">{cart.map((item) => (<div key={item.id} className="flex gap-4 p-3 rounded-2xl hover:bg-[#F0FDF4]/50 dark:hover:bg-slate-800/50 transition border border-transparent hover:border-[#F0FDF4] dark:hover:border-slate-800"><div className="w-20 h-20 bg-[#F8F9FA] dark:bg-slate-800 rounded-xl flex items-center justify-center p-2 shrink-0 border border-gray-100 dark:border-slate-700"><img src={item.img} alt={item.name} className="w-full h-full object-contain" /></div><div className="flex-1 flex flex-col justify-between py-1"><div className="flex justify-between items-start"><div><h4 className="font-bold text-[#14532D] dark:text-green-100 text-sm line-clamp-1">{item.name}</h4><p className="text-xs text-[#14532D]/60 dark:text-green-100/60 mt-0.5">{item.weight}</p></div><button onClick={() => changeQty(item.id, 0)} className="text-gray-300 hover:text-red-500 transition"><FiTrash2 size={14} /></button></div><div className="flex items-center justify-between mt-2"><div className="flex items-center h-8 bg-white dark:bg-slate-800 rounded-lg border border-[#22C55E]/20 dark:border-green-500/20 shadow-sm"><button onClick={() => changeQty(item.id, item.qty - 1)} className="w-8 h-full flex items-center justify-center text-[#16A34A] hover:bg-[#F0FDF4] dark:hover:bg-slate-700"><FiMinus size={12} /></button><span className="text-sm font-bold text-[#14532D] dark:text-green-100 w-6 text-center">{item.qty}</span><button onClick={() => changeQty(item.id, item.qty + 1)} className="w-8 h-full flex items-center justify-center text-[#16A34A] hover:bg-[#F0FDF4] dark:hover:bg-slate-700"><FiPlus size={12} /></button></div><p className="font-bold text-[#14532D] dark:text-green-100">₹{item.price * item.qty}</p></div></div></div>))}</div>
-              <div className="bg-[#F0FDF4]/50 dark:bg-slate-800/50 rounded-2xl p-5 space-y-3 mt-4 border border-[#F0FDF4] dark:border-slate-800">
+              <div className="space-y-4">{cart.map((item) => (<div key={item.id} className="flex gap-4 p-3 rounded-2xl bg-white/40 dark:bg-slate-800/40 border border-white/20 dark:border-white/5 hover:border-[#16A34A]/30 transition"><div className="w-20 h-20 bg-white/60 dark:bg-slate-700/60 rounded-xl flex items-center justify-center p-2 shrink-0 border border-white/30"><img src={item.img} alt={item.name} className="w-full h-full object-contain" /></div><div className="flex-1 flex flex-col justify-between py-1"><div className="flex justify-between items-start"><div><h4 className="font-bold text-[#14532D] dark:text-green-100 text-sm line-clamp-1">{item.name}</h4><p className="text-xs text-[#14532D]/60 dark:text-green-100/60 mt-0.5">{item.weight}</p></div><button onClick={() => changeQty(item.id, 0)} className="text-gray-400 hover:text-red-500 transition"><FiTrash2 size={14} /></button></div><div className="flex items-center justify-between mt-2"><div className="flex items-center h-8 bg-white/50 dark:bg-slate-900/50 rounded-lg border border-[#22C55E]/30 shadow-sm"><button onClick={() => changeQty(item.id, item.qty - 1)} className="w-8 h-full flex items-center justify-center text-[#16A34A] hover:bg-[#22C55E]/10"><FiMinus size={12} /></button><span className="text-sm font-bold text-[#14532D] dark:text-green-100 w-6 text-center">{item.qty}</span><button onClick={() => changeQty(item.id, item.qty + 1)} className="w-8 h-full flex items-center justify-center text-[#16A34A] hover:bg-[#22C55E]/10"><FiPlus size={12} /></button></div><p className="font-bold text-[#14532D] dark:text-green-100">₹{item.price * item.qty}</p></div></div></div>))}</div>
+
+              <div className="bg-white/40 dark:bg-slate-800/40 rounded-2xl p-5 space-y-3 mt-4 border border-white/20 dark:border-white/5 backdrop-blur-md">
                 <h3 className="text-sm font-bold text-[#14532D] dark:text-green-100 mb-2 uppercase tracking-wide">Bill Summary</h3>
                 <div className="flex justify-between text-sm text-[#14532D]/70 dark:text-green-100/70"><span>Item Total</span><span>₹{totalPrice}</span></div>
                 <div className="flex justify-between text-sm text-[#14532D]/70 dark:text-green-100/70"><span>Delivery Fee</span><span>{deliveryFee === 0 ? <span className="text-[#16A34A] font-bold">Free</span> : `₹${deliveryFee}`}</span></div>
                 <div className="flex justify-between text-sm text-[#14532D]/70 dark:text-green-100/70"><span>Platform Fee</span><span>₹{platformFee}</span></div>
-                <div className="border-t border-[#16A34A]/10 dark:border-green-500/10 pt-3 mt-2 flex justify-between text-lg font-extrabold text-[#14532D] dark:text-green-100"><span>To Pay</span><span>₹{finalTotal}</span></div>
+                <div className="border-t border-[#16A34A]/10 dark:border-white/10 pt-3 mt-2 flex justify-between text-lg font-extrabold text-[#14532D] dark:text-green-100"><span>To Pay</span><span>₹{finalTotal}</span></div>
               </div>
             </>
           )}
         </div>
-        {cart.length > 0 && (<div className="bg-white dark:bg-slate-900 p-6 border-t border-[#F0FDF4] dark:border-slate-800 shadow-[0_-10px_40px_rgba(0,0,0,0.05)]"><button onClick={onCheckout} className="w-full bg-[#16A34A] text-white py-4 rounded-xl font-bold text-lg hover:bg-[#15803d] transition-colors">Checkout</button></div>)}
+        {cart.length > 0 && (<div className="p-6 border-t border-white/20 dark:border-white/5 bg-white/30 dark:bg-slate-900/30 backdrop-blur-md"><button onClick={onCheckout} className="w-full bg-[#16A34A] text-white py-4 rounded-xl font-bold text-lg hover:bg-[#15803d] shadow-lg hover:shadow-[#16A34A]/30 transition-all">Checkout</button></div>)}
       </div>
     </>
   );
