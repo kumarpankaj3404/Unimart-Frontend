@@ -1,9 +1,11 @@
-import React, { useEffect } from "react";
+import { useEffect } from "react";
 import Navbar from "./Navbar";
 import Background3D from "../Components/Background3D";
 import { FaLeaf, FaBolt, FaHeart, FaUserTie } from "react-icons/fa";
 import { MdVerified } from "react-icons/md";
 import { Link } from "react-router-dom";
+import { link } from "framer-motion/client";
+import { FaGithub, FaLinkedin } from "react-icons/fa";
 
 const farmImg = "https://i.pinimg.com/1200x/df/d8/de/dfd8de92c0379702e4df753fd1bfe4b6.jpg";
 
@@ -26,7 +28,7 @@ export default function About() {
           </span>
           <h1 className="mt-8 text-5xl lg:text-7xl font-extrabold leading-tight drop-shadow-sm">
             Redefining freshness, <br />
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#16A34A] to-emerald-400">
+            <span className="text-transparent bg-clip-text bg-linear-to-r from-[#16A34A] to-emerald-400">
               one delivery at a time.
             </span>
           </h1>
@@ -126,30 +128,35 @@ export default function About() {
       {/* Leadership Section */}
       <section className="py-20 max-w-7xl mx-auto px-6 border-t border-white/20 dark:border-white/5">
         <div className="text-center mb-16">
-          <h2 className="text-4xl font-bold text-[#14532D] dark:text-green-100 drop-shadow-sm">Our Leadership</h2>
+          <h2 className="text-4xl font-bold text-[#14532D] dark:text-green-100 drop-shadow-sm">Our Members</h2>
           <p className="mt-3 text-lg text-[#14532D]/80 dark:text-green-100/80 font-medium">The minds behind the mission.</p>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           {[
-            { name: "Pankaj Kumar", role: "CEO & Co-Founder" },
-            { name: "Tanvi Leader", role: "Head of Operations" },
-            { name: "Hardik", role: "Chief Technology Officer" },
+            { name: "Pankaj Kumar", github:"https://github.com/kumarpankaj3404", linkedin:"https://www.linkedin.com/in/pankaj-kumar-513a10298/"},
+            { name: "Tanvi Leader" ,github:"https://github.com/TanviGanotra30", linkedin:"https://www.linkedin.com/in/tanvi-ganotra/"},
+            { name: "Hardik", github:"https://github.com/hsaini04", linkedin:"https://www.linkedin.com/in/hardik371/"},
           ].map((member, i) => (
             <div
               key={i}
               className="group bg-white/30 dark:bg-slate-900/30 backdrop-blur-md p-8 rounded-3xl border border-white/30 dark:border-white/10 shadow-sm hover:shadow-xl hover:bg-white/40 dark:hover:bg-slate-900/50 transition-all duration-300 text-center fade-up cursor-default"
               style={{ animationDelay: `${i * 150}ms` }}
             >
-              <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-gradient-to-br from-[#F0FDF4] to-white dark:from-slate-800 dark:to-slate-700 text-[#16A34A] mb-6 shadow-md group-hover:scale-110 transition-transform duration-300 border border-white/20">
+              <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-linear-to-br from-[#F0FDF4] to-white dark:from-slate-800 dark:to-slate-700 text-[#16A34A] mb-6 shadow-md group-hover:scale-110 transition-transform duration-300 border border-white/20">
                 <FaUserTie size={32} />
               </div>
               <h3 className="text-2xl font-bold text-[#14532D] dark:text-green-100 group-hover:text-[#16A34A] transition-colors">
                 {member.name}
               </h3>
-              <p className="text-[#16A34A] font-bold tracking-wide uppercase text-xs mt-2 opacity-90">
-                {member.role}
-              </p>
+              <div className="flex justify-center space-x-4 mt-2">
+                <a href={member.github} target="_blank" rel="noopener noreferrer" className="text-[#14532D] dark:text-green-100 hover:text-[#16A34A] transition-colors">
+                  <FaGithub size={24} />
+                </a>
+                <a href={member.linkedin} target="_blank" rel="noopener noreferrer" className="text-[#14532D] dark:text-green-100 hover:text-[#16A34A] transition-colors">
+                  <FaLinkedin size={24} />
+                </a>
+              </div>
             </div>
           ))}
         </div>

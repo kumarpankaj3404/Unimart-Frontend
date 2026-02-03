@@ -47,6 +47,13 @@ const orderSlice = createSlice({
       state.currentOrder = null;
       state.error = null;
     },
+    clearOrders: (state) => {
+      state.orders = [];
+      state.currentOrder = null;
+      state.loading = false;
+      state.error = null;
+      state.orderSuccess = false;
+    },
   },
   extraReducers: (builder) => {
     // --- Place Order Logic ---
@@ -83,5 +90,5 @@ const orderSlice = createSlice({
   },
 });
 
-export const { resetOrderSuccess } = orderSlice.actions;
+export const { resetOrderSuccess, clearOrders } = orderSlice.actions;
 export default orderSlice.reducer;

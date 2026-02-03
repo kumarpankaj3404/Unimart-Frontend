@@ -13,6 +13,7 @@ import OrderSummaryModal from "./OrderSummaryModal";
 import api from "../utils/api";
 import { placeOrder, resetOrderSuccess } from "../redux/orderSlice";
 import { updateUserFavorites } from "../redux/authSlice";
+import { useLocation } from "react-router-dom";
 
 // Images
 import Apple from "../items/Apples.png";
@@ -63,6 +64,18 @@ export default function Items() {
   const [qtyMap, setQtyMap] = useState(() => JSON.parse(localStorage.getItem("qtyMap")) || {});
   const [cartOpen, setCartOpen] = useState(false);
 
+  const location = useLocation();
+
+  useEffect(() => {
+    if (location.hash) {
+      const id = decodeURIComponent(location.hash.replace("#", ""));
+      const el = document.getElementById(id);
+      if (el) {
+        el.scrollIntoView({ behavior: "smooth", block: "start" });
+      }
+    }
+  }, [location.hash]);
+
   useEffect(() => localStorage.setItem("cart", JSON.stringify(cart)), [cart]);
   useEffect(() => localStorage.setItem("qtyMap", JSON.stringify(qtyMap)), [qtyMap]);
 
@@ -79,6 +92,26 @@ export default function Items() {
     if (!currentUser || !currentUser.favItems) return false;
     return currentUser.favItems.some(fav => fav.product === item.name);
   };
+
+  // Helper to safely get the address list
+  const getSafeAddressList = () => {
+    if (!currentUser?.address) return [];
+    if (Array.isArray(currentUser.address)) return currentUser.address;
+    // Handle specific legacy case where address is a string
+    if (typeof currentUser.address === 'string') {
+      return [{ 
+        fullAddress: currentUser.address, 
+        address: currentUser.address,
+        label: "Saved Address", 
+        _id: "legacy",
+        lat: 0,
+        lng: 0 
+      }];
+    }
+    // Handle case where address is a single object but not in array
+    return [currentUser.address];
+  };
+  const addresses = useMemo(() => getSafeAddressList(), [currentUser]);
 
   const toggleWishlist = async (item) => {
     if (!currentUser) {
@@ -107,22 +140,46 @@ export default function Items() {
 
   const handleCheckoutClick = () => {
     setCartOpen(false);
-    if (currentUser?.address && currentUser.address.length > 0) {
+    // Use the safe addresses list to check length
+    if (addresses && addresses.length > 0) {
       setAddressSelectionOpen(true);
     } else {
       setAddressOpen(true);
     }
   };
 
-  const handleConfirmOrder = () => {
+  const handleConfirmOrder = async () => {
     if (!currentUser) {
       navigate("/login");
       return;
     }
+
+    // Try nested coordinates, then flat, then fallback
+    let finalLat = selectedAddress?.coordinates?.lat ?? selectedAddress?.lat ?? selectedAddress?.latitude;
+    let finalLng = selectedAddress?.coordinates?.lng ?? selectedAddress?.lng ?? selectedAddress?.longitude;
+    
+    const addrString = selectedAddress?.fullAddress || selectedAddress?.address || (typeof selectedAddress === 'string' ? selectedAddress : "");
+
+    // If we have an address string but no coords (legacy address), try to geocode now
+    if ((!finalLat || !finalLng) && addrString) {
+      try {
+        console.log("Attempting to geocode legacy address:", addrString);
+        const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(addrString)}`);
+        const data = await res.json();
+        if (data && data.length > 0) {
+          finalLat = parseFloat(data[0].lat);
+          finalLng = parseFloat(data[0].lon);
+        }
+      } catch (e) {
+        console.error("Failed to geocode legacy address at checkout:", e);
+      }
+    }
+
     const finalAddressObj = {
-      fullAddress: selectedAddress?.address || selectedAddress?.fullAddress || (typeof selectedAddress === 'string' ? selectedAddress : "No Address Provided"),
-      lat: selectedAddress?.lat || 0,
-      lng: selectedAddress?.lng || 0,
+      fullAddress: addrString || "No Address Provided",
+      // Use the computed final coordinates which include schema checks and geocoding results
+      lat: finalLat || 0.000001,
+      lng: finalLng || 0.000001,
       name: selectedAddress?.name || currentUser?.name,
       number: selectedAddress?.number || currentUser?.number || selectedAddress?.phone
     };
@@ -140,6 +197,8 @@ export default function Items() {
       lat: finalAddressObj.lat,
       lng: finalAddressObj.lng
     };
+
+    console.log("Placing Order Payload:", orderData);
     dispatch(placeOrder(orderData));
   };
 
@@ -295,7 +354,7 @@ export default function Items() {
       <AddressSelectionModal
         open={addressSelectionOpen}
         onClose={() => setAddressSelectionOpen(false)}
-        addresses={currentUser?.address || []}
+        addresses={addresses}
         onSelect={(addr) => {
           setSelectedAddress(addr);
           setAddressSelectionOpen(false);
@@ -385,7 +444,7 @@ function AddressSelectionModal({ open, onClose, addresses, onSelect, onAddNew })
 
 function CategoryRow({ title, items, index, scroll, addToCartOnCard, getQty, handlePlus, handleMinus, toggleWishlist, isWished }) {
   return (
-    <div className="relative fade-up" style={{ animationDelay: `${index * 100}ms` }}>
+    <div className="relative fade-up" id={title} style={{ animationDelay: `${index * 100}ms` }}>
       <div className="flex justify-between items-end mb-5 px-1">
         <h2 className="text-2xl font-bold text-[#14532D] dark:text-green-100 drop-shadow-sm">{title}</h2>
         <div className="flex gap-2">

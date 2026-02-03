@@ -69,18 +69,42 @@ export default function AddressModal({ open, onClose, onConfirm, initialData }) 
     );
   };
 
-  const handleConfirm = () => {
-
+  const handleConfirm = async () => {
     const fullAddress = `${address.house}, ${address.landmark ? address.landmark + ', ' : ''}${address.city} - ${address.pincode}`;
+    
+    let finalLat = address.lat;
+    let finalLng = address.lng;
+
+    // If coordinates are missing, try to forward geocode the address
+    if (!finalLat || !finalLng) {
+      try {
+        setLoading(true);
+        const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(fullAddress)}`);
+        const data = await res.json();
+        if (data && data.length > 0) {
+          finalLat = parseFloat(data[0].lat);
+          finalLng = parseFloat(data[0].lon);
+        }
+      } catch (error) {
+        console.error("Geocoding failed for manual address:", error);
+      } finally {
+        setLoading(false);
+      }
+    }
+
     const payload = {
       name: address.name,
       number: address.phone,
       fullAddress: fullAddress,
-      address: fullAddress, // Kept for legacy compatibility
-      lat: address.lat,
-      lng: address.lng
+      // address: fullAddress, // Removed legacy string duplication to encourage object structure
+      label: "Home", // Default label matching schema
+      coordinates: {
+        lat: finalLat,
+        lng: finalLng
+      }
     };
 
+    console.log("Saving Address Payload:", payload); // Debugging
     onConfirm(payload);
     onClose();
   };

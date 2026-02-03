@@ -110,7 +110,7 @@ export default function Favourites() {
               onClick={() => navigate("/items")}
               className="mt-6 bg-[#16A34A] text-white px-8 py-3.5 rounded-xl font-bold shadow-lg flex items-center gap-2"
             >
-              Start Shopping <HiArrowRight />
+              Add Items <HiArrowRight />
             </button>
           </div>
         )}

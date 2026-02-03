@@ -190,7 +190,7 @@ export default function DeliveryPartnerDashboard() {
               </Switch>
             </div>
             <button
-              onClick={() => { dispatch(logout()); navigate("/delivery-partner-login"); }}
+              onClick={() => { dispatch(logout()); navigate("/login", { state: { role: "delivery" } }); }}
               className="p-2.5 rounded-full text-slate-400 hover:text-red-500 hover:bg-red-50 transition-all active:scale-95"
               title="Logout"
             >

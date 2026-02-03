@@ -82,8 +82,15 @@ export default function SavedAddresses() {
                     </div>
                     
                     <p className="text-gray-600 mt-2 leading-relaxed text-sm">
-                      {addr.fullAddress || addr} 
+                      {addr.fullAddress || (typeof addr === 'string' ? addr : "Address text missing")} 
                     </p>
+
+                    {/* Lat/Long Display */}
+                    <div className="mt-3 flex flex-wrap gap-2 text-[10px] font-mono text-gray-400 bg-gray-50 p-2 rounded-lg border border-gray-100">
+                      <span title="Latitude">LAT: {(addr.coordinates?.lat || addr.lat || 0).toFixed(6)}</span>
+                      <span className="text-gray-300">|</span>
+                      <span title="Longitude">LNG: {(addr.coordinates?.lng || addr.lng || 0).toFixed(6)}</span>
+                    </div>
                     
                     {currentUser.number && (
                        <p className="text-xs text-gray-400 mt-3 font-medium flex items-center gap-1">

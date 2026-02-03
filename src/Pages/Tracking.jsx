@@ -1,10 +1,13 @@
-import { useEffect, useRef, useState } from "react";
+import { use, useEffect, useRef, useState } from "react";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 import Navbar from "./Navbar";
 import { useSocket } from "../context/SocketContext";
 import api from "../utils/api";
 import { HiOutlineRefresh } from "react-icons/hi";
+import { useDispatch, useSelector } from "react-redux";
+import { useNavigate } from "react-router-dom";
+
 
 try {
   delete L.Icon.Default.prototype._getIconUrl;
@@ -48,7 +51,16 @@ export default function Tracking() {
   const [activeOrder, setActiveOrder] = useState(null);
   const [driverLocation, setDriverLocation] = useState(null);
   const [loading, setLoading] = useState(true);
+  const { currentUser } = useSelector((state) => state.auth);
+  const navigate = useNavigate();
 
+  useEffect(() => {
+    if (!currentUser) {
+      navigate("/login");
+      alert("Please login to access the Tracking page.");
+      return;
+    }
+  }, []);
   useEffect(() => {
     fetchOrders();
   }, []);
@@ -77,7 +89,6 @@ export default function Tracking() {
 
   useEffect(() => {
     if (!socket) return;
-
     const handleStatusUpdate = (data) => {
       console.log("🔔 Order Status Update:", data);
 

@@ -16,8 +16,7 @@ export default function Profile() {
   const [formData, setFormData] = useState({
     name: "",
     email: "",
-    number: "", 
-    address: "",
+    number: "",
   });
   const [loading, setLoading] = useState(false);
 
@@ -27,7 +26,6 @@ export default function Profile() {
         name: currentUser.name || "",
         email: currentUser.email || "",
         number: currentUser.number || "",
-        address: currentUser.address || "",
       });
     } else {
       navigate("/login");
@@ -106,21 +104,6 @@ export default function Profile() {
                 placeholder="Enter your phone number"
               />
             </div>
-
-            <div>
-              <label className="flex items-center gap-2 text-[#14532D] dark:text-green-100 font-semibold mb-2">
-                <HiOutlineLocationMarker className="text-xl text-[#16A34A]" />
-                Address
-              </label>
-              <textarea
-                value={formData.address}
-                onChange={(e) => setFormData({ ...formData, address: e.target.value })}
-                rows="4"
-                className="w-full px-4 py-3 rounded-xl border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-gray-900 dark:text-white focus:border-[#16A34A] focus:outline-none focus:ring-2 focus:ring-[#16A34A]/20 transition-all resize-none"
-                placeholder="Enter your delivery address"
-              />
-            </div>
-
             <button
               type="submit"
               disabled={loading}

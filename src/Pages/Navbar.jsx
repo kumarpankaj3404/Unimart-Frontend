@@ -4,6 +4,8 @@ import { HiMenuAlt3, HiX, HiOutlineUser, HiOutlineClock, HiOutlineLocationMarker
 import { BsSunFill, BsMoonStarsFill } from "react-icons/bs";
 import { useDispatch, useSelector } from "react-redux";
 import { toggleTheme } from "../redux/themeSlice.js";
+import { logout } from "../redux/authSlice.js";
+import { clearOrders } from "../redux/orderSlice.js";
 
 export default function Navbar() {
   const [open, setOpen] = useState(false);
@@ -56,6 +58,8 @@ export default function Navbar() {
   }, [showUserMenu]);
 
   const handleLogout = () => {
+    dispatch(logout());
+    dispatch(clearOrders());
     localStorage.removeItem("user");
     setUser(null);
     setShowUserMenu(false);
@@ -262,7 +266,7 @@ export default function Navbar() {
                 </div>
               </div>
             ) : (
-              <Link to="/login-selection">
+              <Link to="/login">
                 <button className="bg-gray-900 text-white px-6 py-2.5 rounded-full text-sm font-semibold shadow-lg hover:shadow-xl hover:scale-105 transition-all duration-300">
                   Get Started
                 </button>
@@ -352,7 +356,7 @@ export default function Navbar() {
             </div>
           </div>
         ) : (
-          <Link to="/login-selection" onClick={() => setOpen(false)}>
+          <Link to="/login" onClick={() => setOpen(false)}>
             <button className="w-full bg-green-600 text-white py-3 rounded-xl font-bold shadow-lg shadow-green-200">
               Get Started
             </button>

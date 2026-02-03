@@ -5,9 +5,14 @@ import {
   MdOutlineDeliveryDining,
 } from "react-icons/md";
 import { IoFastFoodOutline } from "react-icons/io5";
+import { useNavigate } from "react-router-dom";
 
 export default function HowItWorksModal({ open, onClose }) {
   if (!open) return null;
+  const nav = useNavigate();
+  const navItem = () => {
+    nav("/items");
+  }
 
   return (
     <>
@@ -65,7 +70,7 @@ export default function HowItWorksModal({ open, onClose }) {
 
           <div className="mt-16 flex justify-center">
             <button
-              onClick={onClose}
+              onClick={navItem}
               className="px-12 py-4 bg-gradient-to-r from-[#16A34A] to-[#22C55E]
                          text-white text-lg font-bold rounded-2xl
                          shadow-lg hover:scale-[1.03] transition"

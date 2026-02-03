@@ -6,10 +6,11 @@ import {
   HiArrowRight,
   HiEye,
   HiEyeOff,
-  HiOutlinePhone 
+  HiOutlinePhone,
+  HiOutlineTruck
 } from "react-icons/hi";
 import { FcGoogle } from "react-icons/fc";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import scooterBgVideo from "../assets/Scooterbg.mp4"; 
 import api from "../utils/api"; 
 
@@ -17,7 +18,15 @@ import { useDispatch, useSelector } from "react-redux";
 import { loginStart, loginSuccess, loginFailure } from "../redux/authSlice";
 
 export default function Auth() {
+  const navigate = useNavigate();
+  const location = useLocation(); // Hook to access navigation state
+  const dispatch = useDispatch();
+  const { loading } = useSelector((state) => state.auth);
+
   const [isSignup, setIsSignup] = useState(false);
+  // Determine initial role based on route (if accessing /delivery-partner-login directly) checks location.state or pathname
+  const initialRole = location.state?.role || (location.pathname.includes("delivery-partner-login") ? "delivery" : "user");
+  const [role, setRole] = useState(initialRole); 
   const [showPass, setShowPass] = useState(false);
   const [showCPass, setShowCPass] = useState(false);
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
@@ -31,9 +40,14 @@ export default function Auth() {
   const [cpass, setCPass] = useState("");
   const [errorMsg, setErrorMsg] = useState("");
 
-  const navigate = useNavigate();
-  const dispatch = useDispatch();
-  const { loading } = useSelector((state) => state.auth);
+  // Update role if location state changes (e.g. navigation updates)
+  useEffect(() => {
+    if (location.state?.role) {
+      setRole(location.state.role);
+    } else if (location.pathname.includes("delivery-partner-login")) {
+      setRole("delivery");
+    }
+  }, [location.state, location.pathname]);
 
   useEffect(() => {
     if (videoRef.current) videoRef.current.play().catch(console.error);
@@ -63,8 +77,13 @@ export default function Auth() {
 
       console.log("Login Response:", response);
 
-      const userData = response.data.data;
+      const userData = response.data.data || response.data.user || response.data;
       if (!userData) throw new Error("No user data received");
+
+      // Check if the logged-in user matches the selected role
+      if (userData.role !== role) {
+        throw new Error(`This account is not registered as a ${role === 'user' ? 'Customer' : 'Delivery Partner'}.`);
+      }
 
       const token = response.data.accessToken || response.data.token || userData.accessToken;
 
@@ -74,10 +93,17 @@ export default function Auth() {
       if (token) localStorage.setItem("accessToken", token);
 
       dispatch(loginSuccess(userPayload));
-      navigate("/"); 
+      
+      if (role === "delivery") {
+        navigate("/delivery-partner-dashboard");
+      } else {
+        navigate("/");
+      }
+      
+      
     } catch (err) {
       console.error(err);
-      const message = err.response?.data?.message || "Login failed";
+      const message = err.response?.data?.message || err.message || "Network Error: Please check your connection.";
       setErrorMsg(message);
       dispatch(loginFailure(message));
     }
@@ -101,15 +127,25 @@ export default function Auth() {
         email,
         password: pass,
         number,
-        role: "user"
+        role: role
       });
 
       console.log("Signup Response:", response);
 
-      const userData = response.data.data;
+      const userData = response.data.data || response.data.user;
+      const token = response.data.accessToken || response.data.token || (userData && userData.accessToken);
+      const userPayload = { ...userData, accessToken: token };
 
-      dispatch(loginSuccess(userData));
-      navigate("/");
+      localStorage.setItem("user", JSON.stringify(userPayload));
+      if (token) localStorage.setItem("accessToken", token);
+
+      dispatch(loginSuccess(userPayload));
+      
+      if (role === "delivery") {
+        navigate("/delivery-partner-dashboard");
+      } else {
+        navigate("/");
+      }
 
     } catch (err) {
       console.error(err);
@@ -163,12 +199,39 @@ export default function Auth() {
         ">
 
           <div className="p-8 sm:p-10 relative z-10">
+            {/* Role Switcher Tabs */}
+            <div className="flex bg-white/30 dark:bg-slate-800/50 rounded-xl p-1 mb-6 relative backdrop-blur-sm border border-white/20">
+               <button
+                 onClick={() => setRole("user")}
+                 className={`flex-1 flex items-center justify-center gap-2 py-2 rounded-lg text-sm font-bold transition-all duration-300 ${
+                   role === "user" 
+                     ? "bg-white dark:bg-slate-700 text-[#16A34A] shadow-sm scale-100" 
+                     : "text-gray-600 dark:text-gray-400 hover:bg-white/10"
+                 }`}
+               >
+                 <HiOutlineUser className="text-lg" /> Customer
+               </button>
+               <button
+                 onClick={() => setRole("delivery")}
+                 className={`flex-1 flex items-center justify-center gap-2 py-2 rounded-lg text-sm font-bold transition-all duration-300 ${
+                   role === "delivery" 
+                     ? "bg-white dark:bg-slate-700 text-[#16A34A] shadow-sm scale-100" 
+                     : "text-gray-600 dark:text-gray-400 hover:bg-white/10"
+                 }`}
+               >
+                 <HiOutlineTruck className="text-lg" /> Partner
+               </button>
+            </div>
+
             <div className="text-center mb-8">
               <h2 className="text-3xl font-bold text-gray-900 dark:text-white group-hover:text-[#16A34A] transition-colors duration-300 mb-2 tracking-tight">
                 {isSignup ? "Create Account" : "Welcome Back"}
               </h2>
               <p className="text-gray-700 dark:text-gray-300 text-sm font-medium">
-                {isSignup ? "Join the fastest delivery network" : "Enter your details to continue"}
+                {role === "user" 
+                  ? (isSignup ? "Join to order groceries" : "Enter your details to continue")
+                  : (isSignup ? "Join the fastest delivery fleet" : "Partner Login Portal")
+                }
               </p>
             </div>
 

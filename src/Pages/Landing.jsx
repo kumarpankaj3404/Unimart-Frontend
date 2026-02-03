@@ -16,6 +16,7 @@ import drink from "../assets/drinks.png";
 import bake from "../assets/bakery.png";
 import Navbar from "./Navbar";
 import HowItWorksModal from "./HowItWorksModal";
+import { useNavigate } from "react-router-dom";
 
 // --- Main Component ---
 
@@ -36,6 +37,12 @@ export default function Landing() {
   useEffect(() => {
     setTimeout(() => setLoading(false), 900);
   }, []);
+
+  const navigate = useNavigate();
+
+  const handleCatClick = (category) => {
+    navigate(`/items#${encodeURIComponent(category)}`);
+  }
 
   useEffect(() => {
     const iv = setInterval(() => setIdx((i) => (i + 1) % testimonials.length), 4200);
@@ -86,10 +93,10 @@ export default function Landing() {
 
           <div className="flex-1 relative fade-up delay-200">
             {/* Glass Container for Video */}
-            <div className="rounded-3xl overflow-hidden shadow-2xl border border-white/20 dark:border-white/10 bg-white/20 dark:bg-black/20 backdrop-blur-lg p-2">
+            <div className="rounded-3xl overflow-hidden shadow-2xl border border-white/20 dark:border-white/10 bg-white/20 dark:bg-black/20 backdrop-blur-lg p-1">
               <div className="rounded-2xl overflow-hidden relative">
                 <video autoPlay muted loop playsInline className="w-full h-[350px] object-cover">
-                  <source src={deliveryVideo} type="video/mp4" />
+                  <source src="https://res.cloudinary.com/drksg4rho/video/upload/v1770142608/Animated_Grocery_Delivery_Tracking_Video_xw6to6.mp4" type="video/mp4" />
                 </video>
               </div>
             </div>
@@ -140,9 +147,10 @@ export default function Landing() {
             ].map((c) => (
               <div
                 key={c.name}
+                onClick={() => handleCatClick(c.name)}
                 className="rounded-2xl overflow-hidden 
                 bg-white/20 dark:bg-slate-800/20 backdrop-blur-md border border-white/30 dark:border-white/10
-                shadow-lg hover:shadow-2xl hover:bg-white/30 transition-all duration-300 group fade-up w-full h-[260px] cursor-pointer"
+                shadow-lg hover:shadow-2xl hover:bg-white/30 transition-all duration-300 group fade-up w-full h-65 cursor-pointer"
               >
                 <div className="h-44 overflow-hidden p-2">
                   <img
@@ -153,6 +161,7 @@ export default function Landing() {
                 </div>
                 <div className="p-2 text-center">
                   <div className="font-semibold text-xl text-[#14532D] dark:text-white">{c.name}</div>
+            
                   <div className="text-sm text-[#14532D]/70 dark:text-green-200/70">Explore &rarr;</div>
                 </div>
               </div>
@@ -173,7 +182,7 @@ export default function Landing() {
             <div className="absolute inset-0 bg-gradient-to-br from-white/10 to-transparent pointer-events-none" />
 
             <div className="relative z-10">
-              <div className="absolute -top-6 left-1/2 -translate-x-1/2 text-5xl animate-bounce drop-shadow-lg">
+              <div className=" text-5xl animate-bounce drop-shadow-lg text-center mb-4">
                 🛵
               </div>
 
@@ -184,7 +193,7 @@ export default function Landing() {
               <div className="w-full h-3 bg-gray-200/50 dark:bg-slate-700/50 rounded-full overflow-hidden mb-8 backdrop-blur-sm">
                 <div
                   className="h-full bg-gradient-to-r from-[#16A34A] to-emerald-400 shadow-[0_0_10px_#16A34A] transition-all duration-700"
-                  style={{ width: `${(idx + 1) * 33.33}%` }}
+                  style={{ width: `${((idx + 1) * 33.33) - 15}%` }}
                 ></div>
               </div>
 
@@ -198,7 +207,7 @@ export default function Landing() {
                   <span className="text-sm opacity-70">Rider moving</span>
                 </div>
                 <div className={`${idx >= 2 ? "text-[#16A34A] font-bold" : "opacity-50"}`}>
-                  📦 Delivered <br />
+                  📦 Arrived <br />
                   <span className="text-sm opacity-70">Almost there</span>
                 </div>
               </div>
@@ -239,7 +248,7 @@ export default function Landing() {
                 <ul className="space-y-4 font-medium">
                   <li><Link to="/items" className="hover:text-[#22C55E] hover:translate-x-1 inline-block transition-all">Shop Now</Link></li>
                   <li><Link to="/tracking" className="hover:text-[#22C55E] hover:translate-x-1 inline-block transition-all">Track Order</Link></li>
-                  <li><Link to="/delivery-partner-login" className="hover:text-[#22C55E] hover:translate-x-1 inline-block transition-all">Partner App</Link></li>
+                  <li><Link to="/login" state={{ role: "delivery" }} className="hover:text-[#22C55E] hover:translate-x-1 inline-block transition-all">Partner App</Link></li>
                 </ul>
               </div>
 
@@ -302,7 +311,6 @@ export default function Landing() {
             80% { transform: translateX(150%); opacity: 1; }
             100% { transform: translateX(200%); opacity: 0; }
           }
-          .scooterMove { animation: scooterMove 8s ease-in-out infinite; }
 
           @keyframes floating {
             0%,100% { transform: translateY(0); }
