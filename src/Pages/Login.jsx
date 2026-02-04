@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect } from "react";
+import { Helmet } from "react-helmet-async";
 import {
   HiOutlineMail,
   HiOutlineLockClosed,
@@ -160,6 +161,12 @@ export default function Auth() {
       className="min-h-screen w-full flex items-center justify-center relative overflow-hidden bg-gray-50 dark:bg-gray-900 transition-colors duration-300"
       onMouseMove={handleMouseMove}
     >
+      <Helmet>
+        <title>Login & Sign Up | UniMart - Customer & Delivery Partner</title>
+        <meta name="description" content="Login or sign up to UniMart. Access your grocery orders, track deliveries, and manage your account. Also available for delivery partners." />
+        <meta name="keywords" content="login, sign up, register, grocery account, delivery partner" />
+        <meta name="robots" content="index, follow" />
+      </Helmet>
       <div className="absolute inset-0 w-full h-full z-0 bg-gray-50 dark:bg-gray-900 transition-colors duration-300">
         <video
           ref={videoRef}

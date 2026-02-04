@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { Helmet } from "react-helmet-async";
 import { HiOutlineLocationMarker, HiPlus, HiTrash } from "react-icons/hi";
 import { useDispatch, useSelector } from "react-redux";
 import Navbar from "./Navbar"; 
@@ -37,9 +38,14 @@ export default function SavedAddresses() {
   };
 
   const addressList = getAddressList();
-
   return (
     <div className="min-h-screen bg-[#F0FDF4]">
+      <Helmet>
+        <title>Saved Addresses | UniMart</title>
+        <meta name="description" content="Manage your saved delivery addresses on UniMart for faster checkout and multiple delivery locations." />
+        <meta name="keywords" content="saved addresses, delivery address, saved locations" />
+        <meta name="robots" content="noindex, follow" />
+      </Helmet>
       <Navbar />
       
       <div className="pt-32 pb-16 max-w-4xl mx-auto px-6">

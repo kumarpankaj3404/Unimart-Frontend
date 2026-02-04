@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { Helmet } from "react-helmet-async";
 import { HiOutlineUser, HiOutlineMail, HiOutlinePhone, HiOutlineLocationMarker } from "react-icons/hi";
 import Navbar from "./Navbar";
 import api from "../utils/api"; 
@@ -56,6 +57,12 @@ export default function Profile() {
 
   return (
     <div className="min-h-screen bg-[#F0FDF4] dark:bg-slate-950 transition-colors duration-300">
+      <Helmet>
+        <title>My Profile | UniMart</title>
+        <meta name="description" content="Manage your UniMart profile. Update your name, email, phone number, and delivery addresses." />
+        <meta name="keywords" content="profile, account settings, user profile" />
+        <meta name="robots" content="noindex, follow" />
+      </Helmet>
       <Navbar />
       <div className="pt-32 pb-16 max-w-4xl mx-auto px-6">
         <h1 className="text-4xl font-bold text-[#14532D] dark:text-green-100 mb-8">Profile Settings</h1>

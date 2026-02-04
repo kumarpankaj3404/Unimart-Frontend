@@ -1,5 +1,6 @@
 import React, { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { Helmet } from "react-helmet-async";
 import Navbar from "./Navbar";
 import { useDispatch, useSelector } from "react-redux";
 import { fetchUserOrders } from "../redux/orderSlice"; 
@@ -23,6 +24,12 @@ export default function Orders() {
 
   return (
     <div className="min-h-screen bg-[#F0FDF4] dark:bg-slate-950 transition-colors duration-300">
+      <Helmet>
+        <title>My Orders | UniMart - Track Your Grocery Orders</title>
+        <meta name="description" content="View and track all your UniMart grocery orders. Check order status, delivery details, and track real-time delivery updates." />
+        <meta name="keywords" content="my orders, order history, track order, delivery status, grocery orders" />
+        <meta name="robots" content="noindex, follow" />
+      </Helmet>
       <Navbar />
       <div className="pt-32 pb-16 max-w-5xl mx-auto px-6">
         <h1 className="text-3xl font-bold text-[#14532D] dark:text-green-100 mb-8">Your Orders</h1>

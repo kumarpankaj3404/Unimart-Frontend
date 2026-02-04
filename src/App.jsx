@@ -1,4 +1,5 @@
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import { Helmet } from "react-helmet-async";
 import Landing from "./Pages/Landing";
 import Login from "./Pages/Login";
 import DeliveryPartnerDashboard from "./Pages/DeliveryPartnerDashboard";
@@ -36,6 +37,209 @@ export default function App() {
 
   return (
     <Router>
+      {/* Global SEO Configuration - Helmet Provider */}
+      <Helmet>
+        {/* Primary Meta Tags */}
+        <meta charSet="UTF-8" />
+        <meta httpEquiv="X-UA-Compatible" content="ie=edge" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        
+        {/* Brand & Description */}
+        <meta name="application-name" content="UniMart" />
+        <meta name="apple-mobile-web-app-title" content="UniMart" />
+        <meta name="theme-color" content="#16A34A" />
+        
+        {/* Global Description */}
+        <meta name="description" content="UniMart - Fast and reliable grocery delivery service. Order fresh vegetables, fruits, dairy products, snacks, and bakery items with same-day delivery. Download the app or shop online now." />
+        
+        {/* Global Keywords */}
+        <meta name="keywords" content="grocery delivery, online groceries, fresh vegetables, fruits delivery, dairy products online, fast grocery delivery, grocery shopping app, food delivery, instant delivery, organic groceries, grocery store near me" />
+        
+        {/* Author & Copyright */}
+        <meta name="author" content="UniMart Team" />
+        <meta name="copyright" content="© 2026 UniMart. All rights reserved." />
+        
+        {/* Search Engine Indexing */}
+        <meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1" />
+        <meta name="googlebot" content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1" />
+        <meta name="bingbot" content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1" />
+        
+        {/* Language & Region */}
+        <meta name="language" content="English" />
+        <meta httpEquiv="content-language" content="en-IN" />
+        
+        {/* Open Graph Meta Tags - Social Sharing */}
+        <meta property="og:site_name" content="UniMart" />
+        <meta property="og:type" content="website" />
+        <meta property="og:url" content="https://unimart.com" />
+        <meta property="og:title" content="UniMart - Fast Grocery Delivery | Fresh Products at Your Door" />
+        <meta property="og:description" content="Order fresh groceries online with same-day delivery. UniMart brings quality products from local farmers directly to your doorstep." />
+        <meta property="og:image" content="https://unimart.com/og-image.jpg" />
+        <meta property="og:image:width" content="1200" />
+        <meta property="og:image:height" content="630" />
+        <meta property="og:locale" content="en_IN" />
+        
+        {/* Twitter Card Meta Tags */}
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:site" content="@UniMart" />
+        <meta name="twitter:creator" content="@UniMart" />
+        <meta name="twitter:title" content="UniMart - Fast Grocery Delivery" />
+        <meta name="twitter:description" content="Order fresh groceries online with same-day delivery across major cities." />
+        <meta name="twitter:image" content="https://unimart.com/twitter-image.jpg" />
+        
+        {/* Mobile App Meta Tags */}
+        <meta name="mobile-web-app-capable" content="yes" />
+        <meta name="apple-mobile-web-app-capable" content="yes" />
+        <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+        
+        {/* Canonical URL */}
+        <link rel="canonical" href="https://unimart.com" />
+        
+        {/* Alternate Language URLs */}
+        <link rel="alternate" hrefLang="en-IN" href="https://unimart.com" />
+        
+        {/* Icons */}
+        <link rel="icon" href="/favicon.ico" />
+        <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+        <link rel="manifest" href="/manifest.json" />
+        
+        {/* Preconnect to External Domains */}
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://cdn.cloudflare.com" />
+        <link rel="dns-prefetch" href="https://api.unimart.com" />
+        
+        {/* Schema.org Structured Data - Organization */}
+        <script type="application/ld+json">
+          {JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "Organization",
+            "name": "UniMart",
+            "alternateName": "UniMart Grocery Delivery",
+            "url": "https://unimart.com",
+            "logo": "https://unimart.com/logo.png",
+            "description": "Fast and reliable online grocery delivery service providing fresh vegetables, fruits, dairy, and bakery items.",
+            "sameAs": [
+              "https://www.facebook.com/UniMart",
+              "https://www.instagram.com/UniMart",
+              "https://www.twitter.com/UniMart",
+              "https://www.linkedin.com/company/UniMart"
+            ],
+            "contactPoint": {
+              "@type": "ContactPoint",
+              "contactType": "Customer Service",
+              "telephone": "+91-XXXX-XXXX",
+              "email": "support@unimart.com",
+              "areaServed": ["IN"],
+              "availableLanguage": ["en", "hi"]
+            },
+            "address": {
+              "@type": "PostalAddress",
+              "streetAddress": "Your Business Address",
+              "addressLocality": "Delhi",
+              "addressRegion": "Delhi",
+              "postalCode": "110001",
+              "addressCountry": "IN"
+            },
+            "founder": {
+              "@type": "Person",
+              "name": "UniMart Team"
+            },
+            "foundingDate": "2024",
+            "employees": {
+              "@type": "Person",
+              "name": "UniMart Team"
+            }
+          })}
+        </script>
+        
+        {/* Schema.org Structured Data - Local Business */}
+        <script type="application/ld+json">
+          {JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "LocalBusiness",
+            "name": "UniMart",
+            "description": "Fast grocery delivery service with fresh, quality products",
+            "image": "https://unimart.com/store-image.jpg",
+            "url": "https://unimart.com",
+            "telephone": "+91-XXXX-XXXX",
+            "email": "support@unimart.com",
+            "address": {
+              "@type": "PostalAddress",
+              "streetAddress": "Your Address",
+              "addressLocality": "Delhi",
+              "postalCode": "110001",
+              "addressCountry": "IN"
+            },
+            "geo": {
+              "@type": "GeoCoordinates",
+              "latitude": "28.7041",
+              "longitude": "77.1025"
+            },
+            "openingHoursSpecification": {
+              "@type": "OpeningHoursSpecification",
+              "dayOfWeek": ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"],
+              "opens": "06:00",
+              "closes": "23:00"
+            },
+            "priceRange": "₹",
+            "areaServed": ["Delhi", "NCR"],
+            "serviceType": ["Grocery Delivery", "Food Delivery"],
+            "hasMap": "https://maps.google.com/?q=unimart",
+            "rating": {
+              "@type": "AggregateRating",
+              "ratingValue": "4.8",
+              "ratingCount": "2500"
+            }
+          })}
+        </script>
+        
+        {/* Schema.org Structured Data - E-commerce Site */}
+        <script type="application/ld+json">
+          {JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "WebSite",
+            "url": "https://unimart.com",
+            "name": "UniMart",
+            "description": "Online grocery delivery platform",
+            "potentialAction": {
+              "@type": "SearchAction",
+              "target": {
+                "@type": "EntryPoint",
+                "urlTemplate": "https://unimart.com/search?q={search_term_string}"
+              },
+              "query-input": "required name=search_term_string"
+            }
+          })}
+        </script>
+
+        {/* Breadcrumb Navigation Schema */}
+        <script type="application/ld+json">
+          {JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "BreadcrumbList",
+            "itemListElement": [
+              {
+                "@type": "ListItem",
+                "position": 1,
+                "name": "Home",
+                "item": "https://unimart.com"
+              },
+              {
+                "@type": "ListItem",
+                "position": 2,
+                "name": "Shop",
+                "item": "https://unimart.com/items"
+              },
+              {
+                "@type": "ListItem",
+                "position": 3,
+                "name": "Cart",
+                "item": "https://unimart.com/checkout"
+              }
+            ]
+          })}
+        </script>
+      </Helmet>
       <Routes>
         <Route path="/" element={<Landing />} />
         {/* <Route path="/login-selection" element={<LoginSelection />} /> */}

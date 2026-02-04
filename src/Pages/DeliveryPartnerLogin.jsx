@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import { Helmet } from "react-helmet-async";
 import { useDispatch, useSelector } from "react-redux";
 import {
   HiOutlineMail,
@@ -150,6 +151,12 @@ export default function DeliveryPartnerLogin() {
       className="min-h-screen w-full flex items-center justify-center relative overflow-hidden bg-gray-900"
       onMouseMove={handleMouseMove}
     >
+      <Helmet>
+        <title>Delivery Partner Login | Join UniMart as a Courier</title>
+        <meta name="description" content="Login or sign up as a delivery partner with UniMart. Earn money by delivering groceries. Flexible hours, competitive pay." />
+        <meta name="keywords" content="delivery partner, courier job, earn money, delivery work, gig economy" />
+        <meta name="robots" content="index, follow" />
+      </Helmet>
       <div className="absolute inset-0 w-full h-full z-0 bg-gray-900">
         <video
           ref={videoRef}

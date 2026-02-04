@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from "react";
 import { Link } from "react-router-dom";
+import { Helmet } from "react-helmet-async";
 import { HiOutlineUser, HiOutlineTruck, HiArrowRight } from "react-icons/hi";
 import { MdOutlineShoppingCart, MdOutlineDeliveryDining, MdLocalShipping, MdStars } from "react-icons/md";
 import scooterBgVideo from "../assets/Scooterbg.mp4";
@@ -29,6 +30,12 @@ export default function LoginSelection() {
       className="min-h-screen w-full flex items-center justify-center relative overflow-hidden bg-gray-50 dark:bg-gray-900 transition-colors duration-300"
       onMouseMove={handleMouseMove}
     >
+      <Helmet>
+        <title>Choose Login Type | UniMart - Customer or Delivery Partner</title>
+        <meta name="description" content="Login as a customer to order groceries or as a delivery partner to earn money delivering orders with UniMart." />
+        <meta name="keywords" content="login, customer login, delivery partner, sign in" />
+        <meta name="robots" content="index, follow" />
+      </Helmet>
 
       <div className="absolute inset-0 w-full h-full z-0 bg-gray-50 dark:bg-gray-900 transition-colors duration-300">
         <video

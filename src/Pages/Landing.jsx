@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
+import { Helmet } from "react-helmet-async";
 import Background3D from "../Components/Background3D";
 import {
   MdOutlineDeliveryDining,
@@ -51,6 +52,19 @@ export default function Landing() {
 
   return (
     <div className="relative min-h-screen text-[#14532D] dark:text-green-100 overflow-x-hidden selection:bg-[#22C55E] selection:text-white transition-colors duration-300">
+      <Helmet>
+        <title>UniMart - Fast Grocery Delivery | Fresh Products at Your Door</title>
+        <meta name="description" content="UniMart - Lightning fast grocery delivery service. Get fresh vegetables, dairy, snacks, and bakery items delivered to your door. Same-day delivery in major cities." />
+        <meta name="keywords" content="grocery delivery, fresh vegetables, dairy products, fast delivery, online groceries, food delivery app" />
+        <meta property="og:title" content="UniMart - Fast Grocery Delivery Service" />
+        <meta property="og:description" content="Order fresh groceries online with UniMart. Quick delivery, premium quality products, competitive prices." />
+        <meta property="og:type" content="website" />
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:title" content="UniMart - Fast Grocery Delivery" />
+        <meta name="twitter:description" content="Get fresh groceries delivered fast with UniMart" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <meta name="robots" content="index, follow" />
+      </Helmet>
 
       {/* 3D Background - Shared Component */}
       <Background3D />

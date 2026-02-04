@@ -1,6 +1,7 @@
 import React, { useEffect, useState, useRef } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
+import { Helmet } from "react-helmet-async";
 import { HiOutlineLogout, HiOutlineTruck, HiStatusOnline, HiCheckCircle, HiMap, HiLocationMarker } from "react-icons/hi";
 import { Switch } from "@headlessui/react";
 
@@ -163,6 +164,12 @@ export default function DeliveryPartnerDashboard() {
 
   return (
     <div className="min-h-screen bg-slate-50 font-sans pb-24 selection:bg-emerald-500 selection:text-white">
+      <Helmet>
+        <title>Delivery Partner Dashboard | UniMart</title>
+        <meta name="description" content="Manage your deliveries on UniMart. View available orders, track customer locations, update your availability, and earn money." />
+        <meta name="keywords" content="dashboard, delivery orders, delivery tracking, earnings" />
+        <meta name="robots" content="noindex, follow" />
+      </Helmet>
       <div className="fixed top-0 inset-x-0 z-40 bg-white/80 backdrop-blur-md border-b border-gray-200/50 shadow-sm transition-all duration-300">
         <div className="px-6 py-4 flex justify-between items-center max-w-2xl mx-auto">
           <div className="flex items-center gap-3">

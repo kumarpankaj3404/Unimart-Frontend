@@ -1,4 +1,5 @@
 import { useEffect } from "react";
+import { Helmet } from "react-helmet-async";
 import Navbar from "./Navbar";
 import Background3D from "../Components/Background3D";
 import { FaLeaf, FaBolt, FaHeart, FaUserTie } from "react-icons/fa";
@@ -17,6 +18,14 @@ export default function About() {
 
   return (
     <div className="relative min-h-screen text-[#14532D] dark:text-green-100 overflow-x-hidden selection:bg-[#22C55E] selection:text-white transition-colors duration-300">
+      <Helmet>
+        <title>About UniMart - Our Mission & Story</title>
+        <meta name="description" content="Learn about UniMart's mission to deliver fresh groceries directly from farmers to your kitchen. Discover our story, values, and commitment to quality." />
+        <meta name="keywords" content="about UniMart, grocery delivery company, fresh produce, local farmers, mission" />
+        <meta property="og:title" content="About UniMart" />
+        <meta property="og:description" content="Bridging the gap between local farmers and your kitchen table." />
+        <meta name="robots" content="index, follow" />
+      </Helmet>
       <Background3D />
       <Navbar />
 

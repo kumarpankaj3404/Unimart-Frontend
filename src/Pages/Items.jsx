@@ -1,6 +1,7 @@
 import React, { useEffect, useState, useMemo } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
+import { Helmet } from "react-helmet-async";
 import Background3D from "../Components/Background3D";
 import { FaSearch, FaChevronLeft, FaChevronRight, FaHeart, FaRegHeart } from "react-icons/fa";
 import { FiMinus, FiPlus, FiX, FiShoppingBag, FiTrash2, FiMapPin, FiCheckCircle } from "react-icons/fi";
@@ -288,6 +289,14 @@ export default function Items() {
 
   return (
     <div className="min-h-screen bg-transparent text-[#14532D] dark:text-green-100 font-sans pb-24 selection:bg-[#22C55E] selection:text-white transition-colors duration-300">
+      <Helmet>
+        <title>Shop Groceries | Fruits, Vegetables, Dairy & More | UniMart</title>
+        <meta name="description" content="Shop fresh groceries online at UniMart. Browse and order vegetables, fruits, dairy products, snacks, beverages, and bakery items with fast delivery." />
+        <meta name="keywords" content="buy groceries online, fresh fruits vegetables, dairy products, snacks, beverages, grocery store, online shopping" />
+        <meta property="og:title" content="Shop Groceries Online - UniMart" />
+        <meta property="og:description" content="Browse our wide range of fresh groceries. Fast delivery, best prices, quality assured." />
+        <meta name="robots" content="index, follow" />
+      </Helmet>
       <Background3D />
       <Navbar />
 

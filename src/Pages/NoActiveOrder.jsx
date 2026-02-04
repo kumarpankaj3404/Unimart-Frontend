@@ -1,5 +1,6 @@
 import React, { useRef, useEffect } from "react";
 import { Link } from "react-router-dom";
+import { Helmet } from "react-helmet-async";
 import Navbar from "./Navbar";
 import vegetableImg from "../assets/Vegetable.png";
 import snacksImg from "../assets/snacks.png";
@@ -80,6 +81,12 @@ export default function NoActiveOrder() {
 
     return (
         <>
+            <Helmet>
+                <title>Shop Now | UniMart - Order Groceries</title>
+                <meta name="description" content="You have no active orders. Browse and order fresh groceries from UniMart. Quick delivery to your door." />
+                <meta name="keywords" content="groceries, order now, fresh products, grocery shopping" />
+                <meta name="robots" content="index, follow" />
+            </Helmet>
             <Navbar />
             <div ref={containerRef} className="min-h-screen bg-[#F3F4F6] flex flex-col items-center justify-center p-6 pt-28 pb-12 overflow-hidden relative">
 

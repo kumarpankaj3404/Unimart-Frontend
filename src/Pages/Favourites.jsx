@@ -1,6 +1,7 @@
 import React, { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
+import { Helmet } from "react-helmet-async";
 import { HiOutlineShoppingCart, HiTrash, HiArrowRight } from "react-icons/hi";
 import { MdOutlineFavoriteBorder } from "react-icons/md";
 import Navbar from "./Navbar";
@@ -53,6 +54,12 @@ export default function Favourites() {
 
   return (
     <div className="min-h-screen bg-[#F0FDF4] font-sans">
+      <Helmet>
+        <title>Favourites | UniMart - Saved Items</title>
+        <meta name="description" content="View and manage your favourite items on UniMart. Quick access to your saved products for faster shopping." />
+        <meta name="keywords" content="favourites, wishlist, saved items, bookmarked products" />
+        <meta name="robots" content="noindex, follow" />
+      </Helmet>
       <Navbar />
       
       <div className="pt-32 pb-16 max-w-6xl mx-auto px-6">

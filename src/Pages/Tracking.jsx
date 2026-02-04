@@ -1,4 +1,5 @@
 import { use, useEffect, useRef, useState } from "react";
+import { Helmet } from "react-helmet-async";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 import Navbar from "./Navbar";
@@ -261,6 +262,12 @@ export default function Tracking() {
 
   return (
     <>
+      <Helmet>
+        <title>Track Order | UniMart - Real-Time Delivery Tracking</title>
+        <meta name="description" content="Track your UniMart grocery order in real-time. See your delivery location, estimated arrival time, and delivery partner details." />
+        <meta name="keywords" content="track order, delivery tracking, real-time tracking, order status" />
+        <meta name="robots" content="noindex, follow" />
+      </Helmet>
       <Navbar />
       <div className="flex flex-col lg:flex-row h-screen w-full bg-gray-50 dark:bg-slate-950 overflow-hidden font-sans pt-20 lg:pt-24 transition-colors duration-300">
         <div className="order-2 lg:order-1 w-full lg:w-[400px] xl:w-[450px] bg-white dark:bg-slate-900 shadow-xl z-20 flex flex-col h-[50vh] lg:h-full border-r border-gray-200 dark:border-slate-800">

@@ -1,5 +1,6 @@
 import React, { useEffect, useRef } from "react";
 import { Link } from "react-router-dom";
+import { Helmet } from "react-helmet-async";
 import Navbar from "./Navbar";
 import vegetableImg from "../assets/Vegetable.png";
 import snacksImg from "../assets/snacks.png";
@@ -45,6 +46,11 @@ export default function NotFound() {
 
     return (
         <>
+            <Helmet>
+                <title>Page Not Found | UniMart</title>
+                <meta name="description" content="The page you're looking for doesn't exist. Return to UniMart and continue shopping for fresh groceries." />
+                <meta name="robots" content="noindex, nofollow" />
+            </Helmet>
             <Navbar />
             <div
                 ref={containerRef}
