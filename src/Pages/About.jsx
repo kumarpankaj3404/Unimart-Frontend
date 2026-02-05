@@ -19,10 +19,10 @@ export default function About() {
   return (
     <div className="relative min-h-screen text-[#14532D] dark:text-green-100 overflow-x-hidden selection:bg-[#22C55E] selection:text-white transition-colors duration-300">
       <Helmet>
-        <title>About UniMart - Our Mission & Story</title>
-        <meta name="description" content="Learn about UniMart's mission to deliver fresh groceries directly from farmers to your kitchen. Discover our story, values, and commitment to quality." />
-        <meta name="keywords" content="about UniMart, grocery delivery company, fresh produce, local farmers, mission" />
-        <meta property="og:title" content="About UniMart" />
+        <title>About Unimart - Our Mission & Story</title>
+        <meta name="description" content="Learn about Unimart's mission to deliver fresh groceries directly from farmers to your kitchen. Discover our story, values, and commitment to quality." />
+        <meta name="keywords" content="about unimart, unimart story, grocery delivery company, fresh produce, local farmers, mission" />
+        <meta property="og:title" content="About Unimart" />
         <meta property="og:description" content="Bridging the gap between local farmers and your kitchen table." />
         <meta name="robots" content="index, follow" />
       </Helmet>
@@ -143,9 +143,9 @@ export default function About() {
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           {[
-            { name: "Pankaj Kumar", github:"https://github.com/kumarpankaj3404", linkedin:"https://www.linkedin.com/in/pankaj-kumar-513a10298/"},
-            { name: "Tanvi Leader" ,github:"https://github.com/TanviGanotra30", linkedin:"https://www.linkedin.com/in/tanvi-ganotra/"},
-            { name: "Hardik", github:"https://github.com/hsaini04", linkedin:"https://www.linkedin.com/in/hardik371/"},
+            { name: "Pankaj Kumar", github: "https://github.com/kumarpankaj3404", linkedin: "https://www.linkedin.com/in/pankaj-kumar-513a10298/" },
+            { name: "Tanvi Leader", github: "https://github.com/TanviGanotra30", linkedin: "https://www.linkedin.com/in/tanvi-ganotra/" },
+            { name: "Hardik", github: "https://github.com/hsaini04", linkedin: "https://www.linkedin.com/in/hardik371/" },
           ].map((member, i) => (
             <div
               key={i}

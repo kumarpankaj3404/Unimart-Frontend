@@ -100,13 +100,13 @@ export default function Items() {
     if (Array.isArray(currentUser.address)) return currentUser.address;
     // Handle specific legacy case where address is a string
     if (typeof currentUser.address === 'string') {
-      return [{ 
-        fullAddress: currentUser.address, 
+      return [{
+        fullAddress: currentUser.address,
         address: currentUser.address,
-        label: "Saved Address", 
+        label: "Saved Address",
         _id: "legacy",
         lat: 0,
-        lng: 0 
+        lng: 0
       }];
     }
     // Handle case where address is a single object but not in array
@@ -158,7 +158,7 @@ export default function Items() {
     // Try nested coordinates, then flat, then fallback
     let finalLat = selectedAddress?.coordinates?.lat ?? selectedAddress?.lat ?? selectedAddress?.latitude;
     let finalLng = selectedAddress?.coordinates?.lng ?? selectedAddress?.lng ?? selectedAddress?.longitude;
-    
+
     const addrString = selectedAddress?.fullAddress || selectedAddress?.address || (typeof selectedAddress === 'string' ? selectedAddress : "");
 
     // If we have an address string but no coords (legacy address), try to geocode now
@@ -290,11 +290,11 @@ export default function Items() {
   return (
     <div className="min-h-screen bg-transparent text-[#14532D] dark:text-green-100 font-sans pb-24 selection:bg-[#22C55E] selection:text-white transition-colors duration-300">
       <Helmet>
-        <title>Shop Groceries | Fruits, Vegetables, Dairy & More | UniMart</title>
-        <meta name="description" content="Shop fresh groceries online at UniMart. Browse and order vegetables, fruits, dairy products, snacks, beverages, and bakery items with fast delivery." />
-        <meta name="keywords" content="buy groceries online, fresh fruits vegetables, dairy products, snacks, beverages, grocery store, online shopping" />
-        <meta property="og:title" content="Shop Groceries Online - UniMart" />
-        <meta property="og:description" content="Browse our wide range of fresh groceries. Fast delivery, best prices, quality assured." />
+        <title>Shop Fresh Groceries | Unimart - Fruits, Vegetables, Dairy & More</title>
+        <meta name="description" content="Shop fresh groceries online at Unimart. Browse and order vegetables, fruits, dairy products, snacks, beverages, and bakery items with ASAP delivery." />
+        <meta name="keywords" content="unimart shop, buy groceries unimart, buy groceries online, fresh fruits vegetables, dairy products, snacks, beverages, grocery store, online shopping" />
+        <meta property="og:title" content="Shop Fresh Groceries | Unimart" />
+        <meta property="og:description" content="Browse our wide range of fresh groceries. Fast delivery, best prices, quality assured with Unimart." />
         <meta name="robots" content="index, follow" />
       </Helmet>
       <Background3D />

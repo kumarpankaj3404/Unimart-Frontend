@@ -263,9 +263,9 @@ export default function Tracking() {
   return (
     <>
       <Helmet>
-        <title>Track Order | UniMart - Real-Time Delivery Tracking</title>
-        <meta name="description" content="Track your UniMart grocery order in real-time. See your delivery location, estimated arrival time, and delivery partner details." />
-        <meta name="keywords" content="track order, delivery tracking, real-time tracking, order status" />
+        <title>Track Your Order | Unimart - Real-Time Delivery Tracking</title>
+        <meta name="description" content="Track your Unimart grocery order in real-time. See your delivery location, estimated arrival time, and delivery partner details." />
+        <meta name="keywords" content="unimart tracking, track unimart order, delivery tracking, real-time tracking, order status" />
         <meta name="robots" content="noindex, follow" />
       </Helmet>
       <Navbar />

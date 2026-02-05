@@ -43,42 +43,42 @@ export default function App() {
         <meta charSet="UTF-8" />
         <meta httpEquiv="X-UA-Compatible" content="ie=edge" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-        
+
         {/* Brand & Description */}
-        <meta name="application-name" content="UniMart" />
-        <meta name="apple-mobile-web-app-title" content="UniMart" />
+        <meta name="application-name" content="Unimart" />
+        <meta name="apple-mobile-web-app-title" content="Unimart" />
         <meta name="theme-color" content="#16A34A" />
-        
+
         {/* Global Description */}
-        <meta name="description" content="UniMart - Fast and reliable grocery delivery service. Order fresh vegetables, fruits, dairy products, snacks, and bakery items with same-day delivery. Download the app or shop online now." />
-        
+        <meta name="description" content="Unimart - Fast and reliable grocery delivery service. Order fresh vegetables, fruits, dairy products, snacks, and bakery items with same-day delivery. Get your groceries ASAP with Unimart." />
+
         {/* Global Keywords */}
-        <meta name="keywords" content="grocery delivery, online groceries, fresh vegetables, fruits delivery, dairy products online, fast grocery delivery, grocery shopping app, food delivery, instant delivery, organic groceries, grocery store near me" />
-        
+        <meta name="keywords" content="unimart, unimart asap, unimart grocery, grocery delivery, online groceries, fresh vegetables, fruits delivery, dairy products online, fast grocery delivery, grocery shopping app, food delivery, instant delivery, organic groceries, grocery store near me" />
+
         {/* Author & Copyright */}
-        <meta name="author" content="UniMart Team" />
-        <meta name="copyright" content="© 2026 UniMart. All rights reserved." />
-        
+        <meta name="author" content="Unimart Team" />
+        <meta name="copyright" content="© 2026 Unimart. All rights reserved." />
+
         {/* Search Engine Indexing */}
         <meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1" />
         <meta name="googlebot" content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1" />
         <meta name="bingbot" content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1" />
-        
+
         {/* Language & Region */}
         <meta name="language" content="English" />
         <meta httpEquiv="content-language" content="en-IN" />
-        
+
         {/* Open Graph Meta Tags - Social Sharing */}
-        <meta property="og:site_name" content="UniMart" />
+        <meta property="og:site_name" content="Unimart" />
         <meta property="og:type" content="website" />
         <meta property="og:url" content="https://unimart.com" />
-        <meta property="og:title" content="UniMart - Fast Grocery Delivery | Fresh Products at Your Door" />
-        <meta property="og:description" content="Order fresh groceries online with same-day delivery. UniMart brings quality products from local farmers directly to your doorstep." />
+        <meta property="og:title" content="Unimart - Grocery Delivery in Minutes | ASAP Delivery" />
+        <meta property="og:description" content="Order fresh groceries online with same-day delivery. Unimart brings quality products from local farmers directly to your doorstep. Get it ASAP." />
         <meta property="og:image" content="https://unimart.com/og-image.jpg" />
         <meta property="og:image:width" content="1200" />
         <meta property="og:image:height" content="630" />
         <meta property="og:locale" content="en_IN" />
-        
+
         {/* Twitter Card Meta Tags */}
         <meta name="twitter:card" content="summary_large_image" />
         <meta name="twitter:site" content="@UniMart" />
@@ -86,28 +86,28 @@ export default function App() {
         <meta name="twitter:title" content="UniMart - Fast Grocery Delivery" />
         <meta name="twitter:description" content="Order fresh groceries online with same-day delivery across major cities." />
         <meta name="twitter:image" content="https://unimart.com/twitter-image.jpg" />
-        
+
         {/* Mobile App Meta Tags */}
         <meta name="mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-        
+
         {/* Canonical URL */}
         <link rel="canonical" href="https://unimart.com" />
-        
+
         {/* Alternate Language URLs */}
         <link rel="alternate" hrefLang="en-IN" href="https://unimart.com" />
-        
+
         {/* Icons */}
         <link rel="icon" href="/favicon.ico" />
         <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
         <link rel="manifest" href="/manifest.json" />
-        
+
         {/* Preconnect to External Domains */}
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://cdn.cloudflare.com" />
         <link rel="dns-prefetch" href="https://api.unimart.com" />
-        
+
         {/* Schema.org Structured Data - Organization */}
         <script type="application/ld+json">
           {JSON.stringify({
@@ -151,7 +151,7 @@ export default function App() {
             }
           })}
         </script>
-        
+
         {/* Schema.org Structured Data - Local Business */}
         <script type="application/ld+json">
           {JSON.stringify({
@@ -192,7 +192,7 @@ export default function App() {
             }
           })}
         </script>
-        
+
         {/* Schema.org Structured Data - E-commerce Site */}
         <script type="application/ld+json">
           {JSON.stringify({
