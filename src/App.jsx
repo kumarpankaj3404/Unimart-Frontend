@@ -185,7 +185,7 @@ export default function App() {
             "areaServed": ["Delhi", "NCR"],
             "serviceType": ["Grocery Delivery", "Food Delivery"],
             "hasMap": "https://maps.google.com/?q=unimart",
-            "rating": {
+            "aggregateRating": {
               "@type": "AggregateRating",
               "ratingValue": "4.8",
               "ratingCount": "2500"
