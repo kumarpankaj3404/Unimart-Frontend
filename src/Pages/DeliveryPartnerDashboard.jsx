@@ -21,6 +21,9 @@ export default function DeliveryPartnerDashboard() {
   const [locationStatus, setLocationStatus] = useState("Initializing...");
   const watchIdRef = useRef(null);
 
+  // Ref to throttle GPS updates
+  const lastUpdateRef = useRef(0);
+
   useEffect(() => {
     fetchData();
     if (currentUser) setIsOnline(currentUser.isAvailable);
@@ -68,20 +71,25 @@ export default function DeliveryPartnerDashboard() {
       setLocationStatus("📍 Broadcasting GPS...");
       const success = (pos) => {
         const { latitude, longitude } = pos.coords;
+        const now = Date.now();
+        
+        // Throttling: Ensure we don't send updates more often than every 5 seconds
+        if (now - lastUpdateRef.current < 5000) return;
+        lastUpdateRef.current = now;
 
-        // Use only WebSockets for sub-500ms latency stream
         socket.emit("LOCATION_UPDATE", {
           orderId: activeOrder._id,
           lat: latitude,
           lng: longitude
         });
       };
+      
       const error = (err) => setLocationStatus("⚠️ GPS Error");
       
-      // maximumAge: 0 forces fresh GPS data (no cache)
+      // maxAge: 0 ensures we don't get cached old data when we DO ask for it
       watchIdRef.current = navigator.geolocation.watchPosition(success, error, { 
         enableHighAccuracy: true, 
-        timeout: 5000,
+        timeout: 10000, 
         maximumAge: 0 
       });
     } else {
@@ -125,8 +133,8 @@ export default function DeliveryPartnerDashboard() {
       await api.post(`/delivery/deliver/${activeOrder._id}`);
 
       setActiveOrder(null);
-      setIsOnline(true);
-      fetchData();
+      // Wait a moment for backend to process, then refresh
+      setTimeout(() => fetchData(), 1000); 
       alert("Order Delivered Successfully!");
     } catch (error) {
       console.error("Complete Order Error:", error);
