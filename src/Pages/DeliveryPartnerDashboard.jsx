@@ -68,12 +68,8 @@ export default function DeliveryPartnerDashboard() {
       setLocationStatus("📍 Broadcasting GPS...");
       const success = (pos) => {
         const { latitude, longitude } = pos.coords;
-        api.post("/delivery/location", {
-          orderId: activeOrder._id,
-          latitude,
-          longitude
-        }).catch(err => console.error("GPS API Error", err));
 
+        // Use only WebSockets for sub-500ms latency stream
         socket.emit("LOCATION_UPDATE", {
           orderId: activeOrder._id,
           lat: latitude,
@@ -81,7 +77,13 @@ export default function DeliveryPartnerDashboard() {
         });
       };
       const error = (err) => setLocationStatus("⚠️ GPS Error");
-      watchIdRef.current = navigator.geolocation.watchPosition(success, error, { enableHighAccuracy: true, timeout: 5000 });
+      
+      // maximumAge: 0 forces fresh GPS data (no cache)
+      watchIdRef.current = navigator.geolocation.watchPosition(success, error, { 
+        enableHighAccuracy: true, 
+        timeout: 5000,
+        maximumAge: 0 
+      });
     } else {
       setLocationStatus("Tracking Paused");
       if (watchIdRef.current) navigator.geolocation.clearWatch(watchIdRef.current);
