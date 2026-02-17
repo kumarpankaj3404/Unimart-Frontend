@@ -2,14 +2,13 @@ import React, { useEffect, useState, useRef } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
-import { HiOutlineLogout, HiOutlineTruck, HiStatusOnline, HiCheckCircle, HiMap, HiLocationMarker } from "react-icons/hi";
-import { Switch } from "@headlessui/react";
-
-import { logout } from "../redux/authSlice";
+import { HiStatusOnline, HiCheckCircle, HiMap, HiLocationMarker, HiOutlineTruck } from "react-icons/hi";
+import DeliveryNavbar from "./DeliveryNavbar";
 import { useSocket } from "../context/SocketContext";
 import api from "../utils/api";
+import ErrorBoundary from "../Components/ErrorBoundary";
 
-export default function DeliveryPartnerDashboard() {
+function DashboardContent() {
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const { currentUser } = useSelector((state) => state.auth);
@@ -18,11 +17,6 @@ export default function DeliveryPartnerDashboard() {
   const [isOnline, setIsOnline] = useState(currentUser?.isAvailable || false);
   const [activeOrder, setActiveOrder] = useState(null);
   const [availableOrders, setAvailableOrders] = useState([]);
-  const [locationStatus, setLocationStatus] = useState("Initializing...");
-  const watchIdRef = useRef(null);
-
-  // Ref to throttle GPS updates
-  const lastUpdateRef = useRef(0);
 
   useEffect(() => {
     fetchData();
@@ -55,8 +49,8 @@ export default function DeliveryPartnerDashboard() {
     if (!socket) return;
     const handleNewAssignment = (order) => {
       setActiveOrder(order);
-      socket.emit("JOIN_ORDER", { orderId: order._id });
-      alert("New Delivery Assigned!");
+      // Ensure Navbar also updates via socket event, or we need to pass activeOrder to Navbar
+      alert("New Delivery Assigned! Please check active order.");
     };
     socket.on("NEW_DELIVERY_ASSIGNMENT", handleNewAssignment);
     socket.on("NEW_ORDER_ASSIGNED", handleNewAssignment);
@@ -66,40 +60,8 @@ export default function DeliveryPartnerDashboard() {
     };
   }, [socket]);
 
-  useEffect(() => {
-    if (isOnline && activeOrder && socket) {
-      setLocationStatus("📍 Broadcasting GPS...");
-      const success = (pos) => {
-        const { latitude, longitude } = pos.coords;
-        const now = Date.now();
-        
-        // Throttling: Ensure we don't send updates more often than every 5 seconds
-        if (now - lastUpdateRef.current < 5000) return;
-        lastUpdateRef.current = now;
+  // GPS Tracking Logic Removed (Handled in DeliveryNavbar)
 
-        socket.emit("LOCATION_UPDATE", {
-          orderId: activeOrder._id,
-          lat: latitude,
-          lng: longitude
-        });
-      };
-      
-      const error = (err) => setLocationStatus("⚠️ GPS Error");
-      
-      // maxAge: 0 ensures we don't get cached old data when we DO ask for it
-      watchIdRef.current = navigator.geolocation.watchPosition(success, error, { 
-        enableHighAccuracy: true, 
-        timeout: 10000, 
-        maximumAge: 0 
-      });
-    } else {
-      setLocationStatus("Tracking Paused");
-      if (watchIdRef.current) navigator.geolocation.clearWatch(watchIdRef.current);
-    }
-    return () => {
-      if (watchIdRef.current) navigator.geolocation.clearWatch(watchIdRef.current);
-    };
-  }, [isOnline, activeOrder, socket]);
 
 
 
@@ -180,42 +142,11 @@ export default function DeliveryPartnerDashboard() {
         <meta name="keywords" content="dashboard, delivery orders, delivery tracking, earnings" />
         <meta name="robots" content="noindex, follow" />
       </Helmet>
-      <div className="fixed top-0 inset-x-0 z-40 bg-white/80 backdrop-blur-md border-b border-gray-200/50 shadow-sm transition-all duration-300">
-        <div className="px-6 py-4 flex justify-between items-center max-w-2xl mx-auto">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-emerald-100 rounded-xl flex items-center justify-center text-emerald-600 shadow-inner">
-              <HiOutlineTruck size={24} />
-            </div>
-            <div>
-              <h1 className="font-extrabold text-xl text-slate-800 tracking-tight">Partner App</h1>
-              <div className="flex items-center gap-1.5">
-                <span className={`w-2 h-2 rounded-full ${isOnline ? 'bg-emerald-500 animate-pulse' : 'bg-slate-300'}`}></span>
-                <p className="text-xs font-semibold text-slate-500">{locationStatus}</p>
-              </div>
-            </div>
-          </div>
-
-          <div className="flex items-center gap-4">
-            <div className="flex flex-col items-end mr-2">
-              <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">{isOnline ? "YOU ARE ONLINE" : "GO ONLINE"}</span>
-              <Switch
-                checked={isOnline}
-                onChange={toggleAvailability}
-                className={`${isOnline ? 'bg-emerald-600' : 'bg-slate-200'} relative inline-flex h-7 w-12 items-center rounded-full transition-all focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2`}
-              >
-                <span className={`${isOnline ? 'translate-x-6' : 'translate-x-1'} inline-block h-5 w-5 transform rounded-full bg-white shadow lg transition duration-200 ease-in-out`} />
-              </Switch>
-            </div>
-            <button
-              onClick={() => { dispatch(logout()); navigate("/login", { state: { role: "delivery" } }); }}
-              className="p-2.5 rounded-full text-slate-400 hover:text-red-500 hover:bg-red-50 transition-all active:scale-95"
-              title="Logout"
-            >
-              <HiOutlineLogout size={22} />
-            </button>
-          </div>
-        </div>
-      </div>
+      <DeliveryNavbar 
+        isOnline={isOnline} 
+        onToggleAvailability={toggleAvailability} 
+        activeOrder={activeOrder}
+      />
 
       <div className="pt-28 max-w-xl mx-auto px-4 space-y-8">
 
@@ -249,8 +180,9 @@ export default function DeliveryPartnerDashboard() {
                           {activeOrder.address?.fullAddress || "Address details loading..."}
                         </p>
                         {activeOrder.orderBy?.name && (
-                          <p className="text-sm font-medium text-slate-500 mt-1 flex items-center gap-1">
+                          <p className="text-sm font-medium text-slate-500 mt-1 flex flex-col">
                             Customer: <span className="text-slate-800">{activeOrder.orderBy.name}</span>
+                            Number: <span className="text-slate-800">{activeOrder.orderBy.number}</span>
                           </p>
                         )}
                       </div>
@@ -261,7 +193,7 @@ export default function DeliveryPartnerDashboard() {
                     className="shrink-0 w-20 bg-blue-600 text-white rounded-2xl shadow-xl shadow-blue-200 hover:bg-blue-700 hover:shadow-2xl hover:scale-105 active:scale-95 transition-all flex flex-col items-center justify-center gap-1"
                   >
                     <HiLocationMarker size={28} />
-                    <span className="text-[10px] font-bold uppercase tracking-wide">Nav</span>
+                    <span className="text-[10px] font-bold uppercase tracking-wide p-2">Open in Google Maps</span>
                   </button>
                 </div>
 
@@ -345,5 +277,13 @@ export default function DeliveryPartnerDashboard() {
         )}
       </div>
     </div>
+  );
+}
+
+export default function DeliveryPartnerDashboard() {
+  return (
+    <ErrorBoundary>
+      <DashboardContent />
+    </ErrorBoundary>
   );
 }
