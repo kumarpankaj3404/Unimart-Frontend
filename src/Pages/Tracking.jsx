@@ -6,6 +6,7 @@ import Navbar from "./Navbar";
 import { useSocket } from "../context/SocketContext";
 import api from "../utils/api";
 import { HiOutlineRefresh } from "react-icons/hi";
+import { FaStar } from "react-icons/fa";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 
@@ -52,6 +53,13 @@ export default function Tracking() {
   const [activeOrder, setActiveOrder] = useState(null);
   const [driverLocation, setDriverLocation] = useState(null);
   const [loading, setLoading] = useState(true);
+
+  // Review State
+  const [showRatingModal, setShowRatingModal] = useState(false);
+  const [rating, setRating] = useState(0);
+  const [comment, setComment] = useState("");
+  const [isSubmittingReview, setIsSubmittingReview] = useState(false);
+
   const { currentUser } = useSelector((state) => state.auth);
   const navigate = useNavigate();
 
@@ -72,12 +80,13 @@ export default function Tracking() {
       const res = await api.get("/orders/user-orders");
       const userOrders = res.data.data || [];
 
+      // Sort by timeline if available, else createdAt
       userOrders.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
       setOrders(userOrders);
 
       if (!activeOrder) {
         const firstActive = userOrders.find(o =>
-          ['processed', 'shipped'].includes(o.status)
+          ['processed', 'shipped', 'pending'].includes(o.status)
         );
         if (firstActive) setActiveOrder(firstActive);
       }
@@ -88,62 +97,75 @@ export default function Tracking() {
     }
   };
 
+  const submitReview = async () => {
+    if (rating === 0) return alert("Please select a rating");
+    try {
+      setIsSubmittingReview(true);
+      await api.post("/reviews/add", {
+        orderId: activeOrder._id,
+        rating,
+        comment
+      });
+      setShowRatingModal(false);
+      alert("Review submitted successfully!");
+      activeOrder.isRated = true;
+      activeOrder.rating = rating;
+      setActiveOrder({ ...activeOrder, isRated: true, rating: rating });
+      setRating(0);
+      setComment("");
+    } catch (error) {
+      console.error("Review failed", error);
+      alert(error.response?.data?.message || "Failed to submit review");
+    } finally {
+      setIsSubmittingReview(false);
+    }
+  };
+
   useEffect(() => {
     if (!socket) return;
-    const handleStatusUpdate = (data) => {
-      console.log("🔔 Order Status Update:", data);
 
-      setOrders(prevOrders => prevOrders.map(o => {
-        if (o._id === data.orderId) {
-          return { ...o, status: data.status };
-        }
-        return o;
-      }));
+    const handleOrderUpdate = (updatedOrder) => {
+      console.log("🔔 Order Update Details:", updatedOrder);
 
-      if (activeOrder && activeOrder._id === data.orderId) {
-        setActiveOrder(prev => ({ ...prev, status: data.status }));
+      // Update the order in the list
+      setOrders(prevOrders => prevOrders.map(o =>
+        o._id === updatedOrder._id ? updatedOrder : o
+      ));
 
-        if (data.status === 'delivered') {
+      // Update active order if it matches
+      if (activeOrder && activeOrder._id === updatedOrder._id) {
+        setActiveOrder(updatedOrder);
+
+        if (updatedOrder.status === 'delivered') {
           setDriverLocation(null);
-          alert("Order Delivered!");
+          // Optional: You could show a toast/alert here, but the UI updates automatically
         }
       }
     };
 
-    socket.on("order-status-updated", handleStatusUpdate);
+    socket.on("ORDER_UPDATED", handleOrderUpdate);
+
+    // JOIN ORDER ROOM FOR LIVE TRACKING
+    if (activeOrder && ["shipped", "processed", "delivered"].includes(activeOrder.status)) {
+      console.log("Joining Order Room:", activeOrder._id);
+      socket.emit("JOIN_ORDER", { orderId: activeOrder._id });
+    }
+
+    const handleLocationUpdate = (data) => {
+      console.log("📍 Location Update:", data);
+      if (data.orderId === activeOrder?._id) {
+        setDriverLocation([data.lat, data.lng]);
+      }
+    };
+
+    socket.on("DELIVERY_LOCATION_UPDATE", handleLocationUpdate);
+    socket.on("JOIN_ORDER_ERROR", (err) => console.error("Join Error:", err));
 
     return () => {
-      socket.off("order-status-updated", handleStatusUpdate);
+      socket.off("ORDER_UPDATED", handleOrderUpdate);
+      socket.off("DELIVERY_LOCATION_UPDATE", handleLocationUpdate);
+      socket.off("JOIN_ORDER_ERROR");
     };
-  }, [socket, activeOrder]);
-
-
-  useEffect(() => {
-    setDriverLocation(null);
-
-    if (!socket || !activeOrder) return;
-
-    if (['processed', 'shipped'].includes(activeOrder.status)) {
-      console.log("🔵 Joining Tracking Room:", activeOrder._id);
-
-      socket.emit("JOIN_ORDER", { orderId: activeOrder._id });
-
-      const handleLocationUpdate = (data) => {
-        const lat = data.lat || data.latitude;
-        const lng = data.lng || data.longitude;
-
-        if (lat && lng) {
-          console.log("📍 GPS:", lat, lng);
-          setDriverLocation([lat, lng]);
-        }
-      };
-
-      socket.on("DELIVERY_LOCATION_UPDATE", handleLocationUpdate);
-
-      return () => {
-        socket.off("DELIVERY_LOCATION_UPDATE", handleLocationUpdate);
-      };
-    }
   }, [socket, activeOrder?._id, activeOrder?.status]);
 
   useEffect(() => {
@@ -356,6 +378,11 @@ export default function Tracking() {
                             🏁 Arriving in <span className="text-[#16A34A] text-lg">{eta} min</span>
                           </p>
                         )}
+                        {/* OTP DISPLAY */}
+                        <div className="mt-2 bg-yellow-100 text-yellow-800 px-3 py-1 rounded-md text-xs font-bold border border-yellow-200">
+                          🔐 OTP: <span className="text-lg tracking-widest">{activeOrder.deliveryOtp || "Loading..."}</span>
+                          <p className="text-[10px] font-normal text-yellow-700">Share this code with delivery partner only upon arrival.</p>
+                        </div>
                       </div>
                     </div>
                   </div>
@@ -363,13 +390,41 @@ export default function Tracking() {
               </>
             ) : (
               <div className="w-full h-full flex flex-col items-center justify-center text-gray-500 dark:text-gray-400 p-8 text-center">
-                <div className="text-6xl mb-4">📍</div>
-                <h3 className="text-xl font-bold text-gray-700 dark:text-gray-200">Order #{activeOrder.orderNumber}</h3>
-                <p className="max-w-xs mx-auto mt-2">
-                  Tracking is only available when the order is <b>Processed</b> or <b>Shipped</b>.
-                  <br />
-                  Current Status: <span className="font-bold uppercase">{activeOrder.status}</span>
-                </p>
+                {activeOrder.status === 'pending' ? (
+                  <div className="flex flex-col items-center">
+                    <div className="relative">
+                      <div className="absolute inset-0 bg-emerald-500 rounded-full animate-ping opacity-20"></div>
+                      <div className="w-24 h-24 bg-emerald-50 dark:bg-emerald-900/30 rounded-full flex items-center justify-center mb-6 border border-emerald-100 dark:border-emerald-800">
+                        <span className="text-4xl animate-pulse">📡</span>
+                      </div>
+                    </div>
+                    <h3 className="text-xl font-bold text-gray-800 dark:text-white mb-2">Searching for Delivery Partner</h3>
+                    <p className="text-gray-500 max-w-xs">We are looking for the nearest delivery partner for your order.</p>
+                  </div>
+                ) : (
+                  <>
+                    <div className="text-6xl mb-4">📍</div>
+                    <h3 className="text-xl font-bold text-gray-700 dark:text-gray-200">Order #{activeOrder.orderNumber}</h3>
+                    <p className="max-w-xs mx-auto mt-2">
+                      Current Status: <span className="font-bold uppercase">{activeOrder.status}</span>
+                    </p>
+                  </>
+                )}
+                {activeOrder.status === 'delivered' && !activeOrder.isRated && (
+                  <div className="mt-4">
+                    <button
+                      onClick={() => setShowRatingModal(true)}
+                      className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700"
+                    >
+                      Rate Delivery
+                    </button>
+                  </div>
+                )}
+                {activeOrder.status === 'delivered' && activeOrder.isRated && (
+                  <div className="mt-4 text-green-600 font-bold bg-green-50 px-4 py-2 rounded-lg border border-green-200">
+                    ✓ You rated this {activeOrder.rating} stars
+                  </div>
+                )}
               </div>
             )
           ) : (
@@ -379,6 +434,51 @@ export default function Tracking() {
           )}
         </div>
       </div>
+
+      {/* RATING MODAL */}
+      {showRatingModal && (
+        <div className="fixed inset-0 z-[1000] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
+          <div className="bg-white dark:bg-slate-900 p-6 rounded-2xl shadow-2xl w-full max-w-sm border border-gray-100 dark:border-slate-800">
+            <h3 className="text-xl font-bold text-gray-800 dark:text-white mb-2 text-center">Rate Your Delivery</h3>
+            <p className="text-gray-500 text-sm text-center mb-6">How was your experience with {activeOrder?.deliveredBy?.name || "the delivery partner"}?</p>
+
+            <div className="flex justify-center gap-2 mb-6">
+              {[1, 2, 3, 4, 5].map((star) => (
+                <FaStar
+                  key={star}
+                  size={32}
+                  className={`cursor-pointer transition-colors ${rating >= star ? "text-yellow-400" : "text-gray-300"}`}
+                  onClick={() => setRating(star)}
+                />
+              ))}
+            </div>
+
+            <textarea
+              className="w-full p-3 bg-gray-50 dark:bg-slate-800 rounded-lg border border-gray-200 dark:border-slate-700 focus:ring-2 focus:ring-blue-500 outline-none text-gray-700 dark:text-gray-200 mb-4"
+              rows="3"
+              placeholder="Share your feedback (optional)..."
+              value={comment}
+              onChange={(e) => setComment(e.target.value)}
+            ></textarea>
+
+            <div className="flex gap-3">
+              <button
+                onClick={() => setShowRatingModal(false)}
+                className="flex-1 py-2 rounded-lg bg-gray-100 dark:bg-slate-800 text-gray-600 dark:text-gray-300 font-bold hover:bg-gray-200 dark:hover:bg-slate-700 transition"
+              >
+                Skip
+              </button>
+              <button
+                onClick={submitReview}
+                disabled={isSubmittingReview}
+                className="flex-1 py-2 rounded-lg bg-blue-600 text-white font-bold hover:bg-blue-700 transition disabled:opacity-50"
+              >
+                {isSubmittingReview ? "Submitting..." : "Submit"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </>
   );
 }

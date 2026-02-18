@@ -1,11 +1,10 @@
 import axios from 'axios';
 
 const api = axios.create({
-    baseURL: 'https://unimart-backend-1fo0.onrender.com/api/v1',
+    baseURL: import.meta.env.VITE_API_URL || 'https://unimart-backend-1fo0.onrender.com/api/v1',
     withCredentials: true,
 });
 
-// Add Interceptor to attach Token
 api.interceptors.request.use(
     (config) => {
         const token = localStorage.getItem("accessToken");

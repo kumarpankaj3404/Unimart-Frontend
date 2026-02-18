@@ -18,6 +18,11 @@ function DashboardContent() {
   const [activeOrder, setActiveOrder] = useState(null);
   const [availableOrders, setAvailableOrders] = useState([]);
 
+
+
+  // Request State
+  const [incomingRequest, setIncomingRequest] = useState(null);
+
   useEffect(() => {
     fetchData();
     if (currentUser) setIsOnline(currentUser.isAvailable);
@@ -47,16 +52,42 @@ function DashboardContent() {
 
   useEffect(() => {
     if (!socket) return;
+    if (!socket) return;
+
+    // Auto-Active Order (if already accepted)
     const handleNewAssignment = (order) => {
       setActiveOrder(order);
-      // Ensure Navbar also updates via socket event, or we need to pass activeOrder to Navbar
-      alert("New Delivery Assigned! Please check active order.");
+      setIncomingRequest(null);
+      alert("You are now assigned to order #" + order.orderNumber);
     };
+
+    // New Request (Pending Acceptance)
+    const handleDeliveryRequest = (order) => {
+      setIncomingRequest(order);
+      // Play notification sound
+      const audio = new Audio("https://actions.google.com/sounds/v1/alarms/beep_short.ogg");
+      audio.play().catch(e => console.log("Audio play failed", e));
+    };
+
     socket.on("NEW_DELIVERY_ASSIGNMENT", handleNewAssignment);
     socket.on("NEW_ORDER_ASSIGNED", handleNewAssignment);
+    socket.on("DELIVERY_REQUEST", handleDeliveryRequest);
+
+    // Listen for general updates (e.g. marked delivered)
+    socket.on("ORDER_UPDATED", (updatedOrder) => {
+      if (activeOrder && activeOrder._id === updatedOrder._id) {
+        setActiveOrder(updatedOrder);
+        // If delivered, we can optionally clear it or keep it visible as delivered
+        if (updatedOrder.status === 'delivered') {
+          // Maybe show a success message
+        }
+      }
+    });
+
     return () => {
       socket.off("NEW_DELIVERY_ASSIGNMENT", handleNewAssignment);
       socket.off("NEW_ORDER_ASSIGNED", handleNewAssignment);
+      socket.off("DELIVERY_REQUEST", handleDeliveryRequest);
     };
   }, [socket]);
 
@@ -78,7 +109,32 @@ function DashboardContent() {
     }
   };
 
+  const handleAcceptRequest = async () => {
+    if (!incomingRequest) return;
+    try {
+      const res = await api.patch(`/orders/accept/${incomingRequest._id}`);
+      setActiveOrder(res.data.data);
+      setIncomingRequest(null);
+      socket.emit("JOIN_ORDER", { orderId: res.data.data._id });
+    } catch (error) {
+      alert("Failed to accept (Order might be taken)");
+      setIncomingRequest(null);
+    }
+  };
+
+  const handleRejectRequest = async () => {
+    if (!incomingRequest) return;
+    try {
+      await api.post(`/delivery/reject/${incomingRequest._id}`);
+      setIncomingRequest(null);
+    } catch (error) {
+      console.error("Reject failed", error);
+    }
+  };
+
+
   const handleAccept = async (orderId) => {
+    // Legacy manual accept from list (if enabled)
     try {
       const res = await api.patch(`/orders/accept/${orderId}`);
       setActiveOrder(res.data.data);
@@ -89,18 +145,20 @@ function DashboardContent() {
     }
   };
 
-  const handleDeliver = async () => {
-    if (!window.confirm("Mark order as delivered?")) return;
+  const handleFinishOrder = async () => {
+    if (!window.confirm("Are you sure you want to mark this order as delivered?")) return;
+
     try {
       await api.post(`/delivery/deliver/${activeOrder._id}`);
 
       setActiveOrder(null);
+
       // Wait a moment for backend to process, then refresh
-      setTimeout(() => fetchData(), 1000); 
+      setTimeout(() => fetchData(), 1000);
       alert("Order Delivered Successfully!");
     } catch (error) {
       console.error("Complete Order Error:", error);
-      alert("Failed to complete order.");
+      alert(error.response?.data?.message || "Failed to complete order.");
     }
   };
 
@@ -142,9 +200,9 @@ function DashboardContent() {
         <meta name="keywords" content="dashboard, delivery orders, delivery tracking, earnings" />
         <meta name="robots" content="noindex, follow" />
       </Helmet>
-      <DeliveryNavbar 
-        isOnline={isOnline} 
-        onToggleAvailability={toggleAvailability} 
+      <DeliveryNavbar
+        isOnline={isOnline}
+        onToggleAvailability={toggleAvailability}
         activeOrder={activeOrder}
       />
 
@@ -223,7 +281,7 @@ function DashboardContent() {
                     <p className="text-2xl font-extrabold text-emerald-400">₹{activeOrder.totalAmount}</p>
                   </div>
                   <button
-                    onClick={handleDeliver}
+                    onClick={handleFinishOrder}
                     className="bg-emerald-500 hover:bg-emerald-400 text-white px-8 py-3.5 rounded-xl font-bold shadow-lg shadow-emerald-900/50 hover:shadow-xl hover:-translate-y-1 active:scale-95 transition-all flex items-center gap-2"
                   >
                     <HiCheckCircle size={20} />
@@ -276,7 +334,59 @@ function DashboardContent() {
           </div>
         )}
       </div>
-    </div>
+
+      {/* INCOMING REQUEST MODAL */}
+      {incomingRequest && !activeOrder && (
+        <div className="fixed inset-0 z-[1100] flex items-center justify-center bg-black/80 backdrop-blur-md p-4 animate-pulse-slow">
+          <div className="bg-white rounded-3xl p-6 w-full max-w-sm shadow-2xl border-4 border-emerald-500 relative overflow-hidden">
+            <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-emerald-400 to-green-500 animate-loading-bar"></div>
+
+            <div className="text-center mb-6">
+              <div className="w-20 h-20 bg-emerald-100 rounded-full flex items-center justify-center mx-auto mb-4 animate-bounce">
+                <HiOutlineTruck className="text-emerald-600" size={40} />
+              </div>
+              <h2 className="text-2xl font-extrabold text-gray-800">New Delivery Request!</h2>
+              <p className="text-gray-500 font-medium">Earn ₹60 for this trip</p>
+            </div>
+
+            <div className="space-y-4 mb-8">
+              <div className="bg-gray-50 p-4 rounded-xl border border-gray-200">
+                <p className="text-xs text-gray-400 uppercase font-bold tracking-wider mb-1">Pickup</p>
+                <p className="font-bold text-gray-800 truncate">Store Location (UniMart)</p>
+              </div>
+              <div className="flex justify-center">
+                <div className="h-6 w-0.5 bg-gray-300"></div>
+              </div>
+              <div className="bg-emerald-50 p-4 rounded-xl border border-emerald-100">
+                <p className="text-xs text-emerald-600 uppercase font-bold tracking-wider mb-1">Dropoff</p>
+                <p className="font-bold text-gray-800">{incomingRequest.address?.fullAddress}</p>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <button
+                onClick={handleRejectRequest}
+                className="py-4 rounded-xl font-bold text-gray-600 bg-gray-100 hover:bg-gray-200 transition-colors"
+              >
+                Reject
+              </button>
+              <button
+                onClick={handleAcceptRequest}
+                className="py-4 rounded-xl font-bold text-white bg-emerald-600 hover:bg-emerald-500 shadow-lg shadow-emerald-200 hover:shadow-xl hover:-translate-y-1 transition-all"
+              >
+                Accept
+              </button>
+            </div>
+
+            <div className="text-center mt-4">
+              <p className="text-xs text-gray-400">Auto-rejecting in 30s...</p>
+            </div>
+          </div>
+        </div>
+      )}
+
+
+    </div >
   );
 }
 

@@ -1,6 +1,6 @@
 # Project Description: Unimart-Frontend
 
-## 🚀 What We Do
+##What We Do
 **Unimart** is a fast and reliable on-demand grocery delivery platform designed to bring fresh produce, daily essentials, and bakery items directly to customers' doorsteps with "ASAP" delivery speed. The project serves two primary user bases via a unified frontend application:
 
 1.  **Customers**:
@@ -16,7 +16,7 @@
 
 ---
 
-## 🛠️ How We Do It (Tech Stack & Architecture)
+##How We Do It (Tech Stack & Architecture)
 The application is a modern **Single Page Application (SPA)** built with the latest web technologies to ensure performance, scalability, and a smooth user experience.
 
 ### **Core Framework & Build Tooling**

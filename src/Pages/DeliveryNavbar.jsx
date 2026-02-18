@@ -32,9 +32,12 @@ export default function DeliveryNavbar({ isOnline, onToggleAvailability, activeO
                 const { latitude, longitude } = pos.coords;
                 const now = Date.now();
 
+                console.log("📍 GPS Fetch:", latitude, longitude, "Order:", activeOrder._id);
+
                 if (now - lastUpdateRef.current < 5000) return;
                 lastUpdateRef.current = now;
 
+                console.log("📡 Emitting LOCATION_UPDATE...");
                 socket.emit("LOCATION_UPDATE", {
                     orderId: activeOrder._id,
                     lat: latitude,

@@ -4,6 +4,7 @@ import { Helmet } from "react-helmet-async";
 import Navbar from "./Navbar";
 import { useDispatch, useSelector } from "react-redux";
 import { fetchUserOrders } from "../redux/orderSlice"; 
+import { p } from "framer-motion/client";
 
 export default function Orders() {
   const navigate = useNavigate();
@@ -42,16 +43,37 @@ export default function Orders() {
           <div className="space-y-4">
             {orders.map((order) => (
               <div key={order._id} className="bg-white dark:bg-slate-900 p-6 rounded-xl shadow-sm border border-transparent dark:border-slate-800 text-gray-800 dark:text-gray-200">
-                <h3 className="font-bold text-lg">Order ID: {order.orderNumber || order._id}</h3>
-                <p className="text-sm opacity-80">Status: <span className="font-semibold uppercase">{order.status}</span></p>
-                <p className="text-sm opacity-80">Total: <span className="font-bold">₹{order.totalAmount}</span></p>
-                {['processed', 'shipped'].includes(order.status) && (
+                <div className="flex justify-between">
+                  <div>
+                    <h3 className="font-bold text-lg">Order ID: {order.orderNumber || order._id}</h3>
+                    <p className="text-sm opacity-80">Status: <span className="font-semibold uppercase">{order.status}</span></p>
+                    <p className="text-sm opacity-80">Total: <span className="font-bold">₹{order.totalAmount}</span></p>
+                  </div>
+                  <div className="flex flex-col ">
+                    <h3 className="font-semibold">Order Items:</h3>
+                    <ul className="list-disc">
+                      {order.products.map((item, index) => 
+                      index >= 3 ? null : (
+                        <li key={item._id}>{item.product}</li>
+                      )
+                    )}
+                    </ul>
+                  </div>
+                </div>
+                {['processed', 'shipped'].includes(order.status) ? (
                   <button
                     onClick={() => navigate("/tracking")}
                     className="mt-4 w-full bg-[#16A34A] text-white py-2 rounded-lg font-semibold hover:bg-[#15803d] transition-colors"
                   >
                     Track Order
                   </button>
+                ) : (
+                  <div className="flex gap-2">
+                    <p>Rating:</p>
+                    {order.isRated == false ? (<p>Not Rated</p>) : (
+                      <p>Order is rated <span className="font-semibold text-red-700">{order.rating}</span> stars</p>
+                    )}
+                  </div>
                 )}
               </div>
             ))}

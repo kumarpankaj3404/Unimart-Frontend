@@ -33,9 +33,9 @@ export const SocketProvider = ({ children }) => {
 
         console.log("🔌 Initializing Socket Connection...");
 
-        const newSocket = io("https://unimart-backend-1fo0.onrender.com", {
+        const newSocket = io(import.meta.env.VITE_SOCKET_URL || "https://unimart-backend-1fo0.onrender.com", {
             auth: {
-                token: token 
+                token: token
             },
             transports: ["websocket"],
             withCredentials: true
@@ -55,7 +55,7 @@ export const SocketProvider = ({ children }) => {
             newSocket.disconnect();
         };
 
-    }, [currentUser]); 
+    }, [currentUser]);
 
     return (
         <SocketContext.Provider value={socket}>
